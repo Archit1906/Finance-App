@@ -15,9 +15,9 @@ export const getNetWorth = async (req, res, next) => {
       if(r.type === 'expense') cash -= Number(r.total);
     });
 
-    const total_assets = total_investments + Math.max(0, cash);
-    const total_liabilities = total_loans + Math.abs(Math.min(0, cash));
-    const net_worth = total_assets - total_liabilities;
+    const total_assets = total_investments + cash;
+    const total_liabilities = total_loans;
+    const net_worth = total_investments + cash - total_loans;
 
     res.json({ success: true, data: { total_assets, total_liabilities, net_worth, cash, total_investments, total_loans } });
   } catch (err) {

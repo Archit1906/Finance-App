@@ -8,12 +8,15 @@ import Transactions from './pages/Transactions';
 import Budgets from './pages/Budgets';
 import Investments from './pages/Investments';
 import Goals from './pages/Goals';
+import Planner from './pages/Planner';
+import Coach from './pages/Coach';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
-  return children;
+  return <ErrorBoundary>{children}</ErrorBoundary>;
 };
 
 export default function App() {
@@ -30,6 +33,8 @@ export default function App() {
         <Route path="budgets" element={<Budgets />} />
         <Route path="investments" element={<Investments />} />
         <Route path="goals" element={<Goals />} />
+        <Route path="planner" element={<Planner />} />
+        <Route path="coach" element={<Coach />} />
         {/* Future routes goes here */}
       </Route>
     </Routes>

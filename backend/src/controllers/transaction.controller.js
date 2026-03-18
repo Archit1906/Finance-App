@@ -1,38 +1,72 @@
 import { query } from '../config/db.js';
 import { categorizeTransaction } from '../services/categorization.service.js';
+import { analyzeTransactionImpact } from '../services/goalEngine.service.js';
 
 export const getTransactions = async (req, res, next) => {
   try {
-    const { type, category, startDate, endDate } = req.query;
+    const { type, category, startDate, endDate, minAmount, maxAmount, page = 1, limit = 20 } = req.query;
+    
     let sql = 'SELECT * FROM transactions WHERE user_id = $1';
+    let countSql = 'SELECT COUNT(*) as total FROM transactions WHERE user_id = $1';
     const params = [req.user.id];
     let paramCount = 1;
 
     if (type) {
       paramCount++;
       sql += ` AND type = $${paramCount}`;
+      countSql += ` AND type = $${paramCount}`;
       params.push(type);
     }
     if (category) {
       paramCount++;
-      sql += ` AND category = $${paramCount}`;
-      params.push(category);
+      sql += ` AND category = ANY($${paramCount}::text[])`;
+      countSql += ` AND category = ANY($${paramCount}::text[])`;
+      params.push(category.split(','));
     }
     if (startDate) {
       paramCount++;
       sql += ` AND date >= $${paramCount}`;
+      countSql += ` AND date >= $${paramCount}`;
       params.push(startDate);
     }
     if (endDate) {
       paramCount++;
       sql += ` AND date <= $${paramCount}`;
+      countSql += ` AND date <= $${paramCount}`;
       params.push(endDate);
     }
+    if (minAmount) {
+      paramCount++;
+      sql += ` AND amount >= $${paramCount}`;
+      countSql += ` AND amount >= $${paramCount}`;
+      params.push(Number(minAmount));
+    }
+    if (maxAmount) {
+      paramCount++;
+      sql += ` AND amount <= $${paramCount}`;
+      countSql += ` AND amount <= $${paramCount}`;
+      params.push(Number(maxAmount));
+    }
 
-    sql += ' ORDER BY date DESC, created_at DESC';
-
-    const result = await query(sql, params);
-    res.json({ success: true, data: result.rows });
+    // Process pagination
+    const offset = (page - 1) * limit;
+    sql += ` ORDER BY date DESC, created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    
+    const countResult = await query(countSql, params);
+    const total = parseInt(countResult.rows[0].total, 10);
+    
+    const result = await query(sql, [...params, limit, offset]);
+    
+    res.json({ 
+      success: true, 
+      data: result.rows,
+      pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (err) {
     next(err);
   }
@@ -54,7 +88,13 @@ export const createTransaction = async (req, res, next) => {
       [req.user.id, amount, type, category, merchant, date, notes]
     );
 
-    res.status(201).json({ success: true, data: result.rows[0] });
+    const transaction = result.rows[0];
+    let nudge = null;
+    if (type === 'expense') {
+      nudge = await analyzeTransactionImpact(req.user.id, transaction);
+    }
+
+    res.status(201).json({ success: true, data: transaction, nudge });
   } catch (err) {
     next(err);
   }
@@ -103,6 +143,43 @@ export const deleteTransaction = async (req, res, next) => {
     }
 
     res.json({ success: true, data: { id: result.rows[0].id } });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const importTransactions = async (req, res, next) => {
+  try {
+    const transactions = req.body.transactions;
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+      return res.status(400).json({ success: false, error: 'Valid payload array required.' });
+    }
+
+    let inserted = 0;
+    let skipped = 0;
+
+    for (const tx of transactions) {
+      try {
+        let { date, amount, type, category, merchant, notes } = tx;
+        if (!merchant || !amount || !date || !type) {
+           skipped++;
+           continue;
+        }
+
+        if (!category && type === 'expense') category = categorizeTransaction(merchant);
+        else if (!category) category = 'Other';
+
+        await query(
+          `INSERT INTO transactions (user_id, amount, type, category, merchant, date, notes) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [req.user.id, amount, type, category, merchant, date, notes]
+        );
+        inserted++;
+      } catch (err) {
+        skipped++;
+      }
+    }
+
+    res.status(201).json({ success: true, inserted, skipped });
   } catch (err) {
     next(err);
   }

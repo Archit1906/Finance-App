@@ -31,6 +31,12 @@ export const getInvestments = async (req, res, next) => {
       };
     });
 
+    let maxLastUpdated = null;
+    if (result.rows.length > 0) {
+      const dates = result.rows.map(r => new Date(r.last_updated).getTime()).filter(x => !isNaN(x));
+      if (dates.length > 0) maxLastUpdated = new Date(Math.max(...dates)).toISOString();
+    }
+
     res.json({ 
       success: true, 
       data: { 
@@ -39,7 +45,8 @@ export const getInvestments = async (req, res, next) => {
           totalInvested, 
           currentValue, 
           totalPnl: currentValue - totalInvested,
-          pnlPercent: totalInvested > 0 ? ((currentValue - totalInvested) / totalInvested) * 100 : 0
+          pnlPercent: totalInvested > 0 ? ((currentValue - totalInvested) / totalInvested) * 100 : 0,
+          lastUpdated: maxLastUpdated
         } 
       } 
     });
@@ -70,11 +77,20 @@ export const addInvestment = async (req, res, next) => {
 
 export const refreshPrices = async (req, res, next) => {
   try {
-    const result = await query("SELECT id, asset_type, symbol FROM investments WHERE user_id = $1 AND symbol IS NOT NULL AND asset_type IN ('mutual_fund', 'crypto')", [req.user.id]);
+    const latestQuery = await query("SELECT MAX(last_updated) as latest FROM investments WHERE user_id = $1", [req.user.id]);
+    if (latestQuery.rows[0].latest) {
+      const msDiff = new Date() - new Date(latestQuery.rows[0].latest);
+      const minsDiff = Math.floor(msDiff / 60000);
+      if (minsDiff < 15) {
+         return res.json({ success: true, message: `Prices are up to date (next refresh in ${15 - minsDiff} min)`, cached: true });
+      }
+    }
+
+    const result = await query("SELECT id, asset_type, symbol, current_price FROM investments WHERE user_id = $1 AND symbol IS NOT NULL AND asset_type IN ('stock', 'mutual_fund', 'crypto')", [req.user.id]);
     let updatedCount = 0;
     
     for (const inv of result.rows) {
-      const live = await getLivePrice(inv.asset_type, inv.symbol);
+      const live = await getLivePrice(inv.asset_type, inv.symbol, inv.current_price);
       if (live) {
         await query(
           "UPDATE investments SET current_price = $1, current_value = quantity * $1, last_updated = NOW() WHERE id = $2",
@@ -84,6 +100,30 @@ export const refreshPrices = async (req, res, next) => {
       }
     }
 
-    res.json({ success: true, message: `Successfully refreshed ${updatedCount} investments` });
+    await query("UPDATE investments SET last_updated = NOW() WHERE user_id = $1", [req.user.id]);
+
+    res.json({ success: true, message: `Successfully refreshed ${updatedCount} investments`, cached: false });
+  } catch (err) { next(err); }
+};
+
+export const updateInvestment = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { asset_type, symbol, name, quantity, buy_price, buy_date, notes } = req.body;
+    const result = await query(
+      `UPDATE investments 
+       SET asset_type = $1, symbol = $2, name = $3, quantity = $4, buy_price = $5, buy_date = $6, notes = $7, current_value = current_price * $4
+       WHERE id = $8 AND user_id = $9 RETURNING *`,
+      [asset_type, symbol, name, quantity, buy_price, buy_date, notes, id, req.user.id]
+    );
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) { next(err); }
+};
+
+export const deleteInvestment = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await query('DELETE FROM investments WHERE id = $1 AND user_id = $2 RETURNING id', [id, req.user.id]);
+    res.json({ success: true, data: result.rows[0] });
   } catch (err) { next(err); }
 };

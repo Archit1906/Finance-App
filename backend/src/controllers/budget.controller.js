@@ -40,11 +40,14 @@ export const setBudget = async (req, res, next) => {
 
 export const getBudgetAlerts = async (req, res, next) => {
   try {
-    const d = new Date();
-    const currentMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    let { month } = req.query;
+    if (!month) {
+      const d = new Date();
+      month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
 
     // Get all budgets for current month
-    const budgetsResp = await query('SELECT * FROM budgets WHERE user_id = $1 AND month = $2', [req.user.id, currentMonth]);
+    const budgetsResp = await query('SELECT * FROM budgets WHERE user_id = $1 AND month = $2', [req.user.id, month]);
     const budgets = budgetsResp.rows;
 
     if (budgets.length === 0) {
@@ -57,7 +60,7 @@ export const getBudgetAlerts = async (req, res, next) => {
        FROM transactions 
        WHERE user_id = $1 AND type = 'expense' AND TO_CHAR(date, 'YYYY-MM') = $2
        GROUP BY category`,
-      [req.user.id, currentMonth]
+      [req.user.id, month]
     );
 
     const expenseMap = {};
@@ -69,14 +72,29 @@ export const getBudgetAlerts = async (req, res, next) => {
       const limit = Number(b.monthly_limit);
       const percentage = (spent / limit) * 100;
 
-      if (percentage >= 100) {
-        alerts.push({ category: b.category, status: 'exceeded', percentage, spent, limit });
-      } else if (percentage >= 80) {
-        alerts.push({ category: b.category, status: 'warning', percentage, spent, limit });
-      }
+      let status = 'good';
+      if (percentage >= 100) status = 'exceeded';
+      else if (percentage >= 80) status = 'warning';
+
+      alerts.push({ id: b.id, category: b.category, status, percentage, spent, limit, month: b.month });
     });
 
     res.json({ success: true, data: alerts });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteBudget = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await query('DELETE FROM budgets WHERE id = $1 AND user_id = $2 RETURNING id', [id, req.user.id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Budget not found or unauthorized' });
+    }
+
+    res.json({ success: true, data: { id: result.rows[0].id } });
   } catch (err) {
     next(err);
   }

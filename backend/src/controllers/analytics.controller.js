@@ -61,10 +61,19 @@ export const getTrend = async (req, res, next) => {
       trends[r.month][r.type] = Number(r.total);
     });
 
-    const formattedData = Object.keys(trends).map(month => ({
+    // Generate last 6 months array dynamically
+    const last6Months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const mStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      last6Months.push(mStr);
+    }
+
+    const formattedData = last6Months.map(month => ({
       month,
-      income: trends[month].income,
-      expense: trends[month].expense
+      income: trends[month]?.income || 0,
+      expense: trends[month]?.expense || 0
     }));
 
     res.json({ success: true, data: formattedData });

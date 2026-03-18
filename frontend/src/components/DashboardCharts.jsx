@@ -19,21 +19,23 @@ export default function DashboardCharts() {
   });
 
   const lineData = {
-    labels: trend?.map(t => new Date(t.month + '-01').toLocaleDateString(undefined, {month: 'short'})).reverse() || [],
+    labels: trend?.map(t => new Date(t.month + '-01').toLocaleDateString(undefined, {month: 'short'})) || [],
     datasets: [
       {
         label: 'Income',
-        data: trend?.map(t => t.income).reverse() || [],
+        data: trend?.map(t => t.income) || [],
         borderColor: '#10b981',
         backgroundColor: '#10b981',
         tension: 0.4,
+        fill: false,
       },
       {
         label: 'Expense',
-        data: trend?.map(t => t.expense).reverse() || [],
+        data: trend?.map(t => t.expense) || [],
         borderColor: '#f43f5e',
         backgroundColor: '#f43f5e',
         tension: 0.4,
+        fill: false,
       }
     ]
   };
@@ -43,7 +45,7 @@ export default function DashboardCharts() {
     datasets: [{
       data: category?.map(c => c.total) || [],
       backgroundColor: [
-        '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#0ea5e9', '#64748b'
+        '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#0ea5e9', '#64748b', '#14b8a6', '#84cc16', '#f472b6', '#38bdf8', '#c084fc', '#fb923c'
       ],
       borderWidth: 0,
       hoverOffset: 4
@@ -72,7 +74,25 @@ export default function DashboardCharts() {
            {category?.length > 0 ? (
              <Doughnut 
                data={donutData} 
-               options={{ maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } } } }} 
+               options={{ 
+                 maintainAspectRatio: false, 
+                 cutout: '70%', 
+                 plugins: { 
+                   legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } },
+                   tooltip: {
+                     callbacks: {
+                       label: function(context) {
+                         let label = context.label || '';
+                         if (label) label += ': ';
+                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                         const value = context.raw;
+                         const percentage = ((value / total) * 100).toFixed(1) + '%';
+                         return label + '₹' + Number(value).toLocaleString('en-IN') + ' (' + percentage + ')';
+                       }
+                     }
+                   }
+                 } 
+               }} 
              />
            ) : (
              <div className="text-sm text-gray-500 flex items-center justify-center h-full w-full bg-gray-50 rounded-xl">

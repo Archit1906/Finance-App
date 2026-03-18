@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { LayoutDashboard, Receipt, PieChart, Target, LogOut, Wallet, Menu } from 'lucide-react';
+import { LayoutDashboard, Receipt, PieChart, Target, LogOut, Wallet, Menu, ClipboardList, Bot } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../../lib/utils';
 
@@ -15,6 +15,8 @@ export default function AppLayout() {
     { name: 'Budgets', href: '/budgets', icon: PieChart },
     { name: 'Investments', href: '/investments', icon: Wallet },
     { name: 'Goals', href: '/goals', icon: Target },
+    { name: 'Planner', href: '/planner', icon: ClipboardList },
+    { name: 'AI Coach', href: '/coach', icon: Bot },
   ];
 
   return (

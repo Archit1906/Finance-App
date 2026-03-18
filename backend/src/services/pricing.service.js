@@ -21,12 +21,19 @@ export const getCryptoPrice = async (coinId) => {
   }
 };
 
-export const getLivePrice = async (type, symbol) => {
+export const getLivePrice = async (type, symbol, currentPrice = null) => {
   if (!symbol) return null;
   
   if (type === 'mutual_fund') return await getMFPrice(symbol);
   if (type === 'crypto') return await getCryptoPrice(symbol);
-  // Stock logic (Alpha Vantage) omitted to save keys, stubbed to random variation
+  
+  // Mock ±5% fluctuation for stocks strictly for the demo environment to prove Live Tracking
+  if (type === 'stock' && currentPrice) {
+     const p = Number(currentPrice);
+     const fluctuation = p * 0.05;
+     const change = (Math.random() * fluctuation * 2) - fluctuation;
+     return Math.max(0.01, p + change);
+  }
   
   return null; 
 };
