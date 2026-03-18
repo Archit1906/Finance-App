@@ -7,6 +7,17 @@ import { Line, Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, ArcElement);
 
+const DONUT_COLORS = {
+  Housing: '#CC0000',
+  Food: '#FF6B6B',
+  Travel: '#FF9F43',
+  Shopping: '#A855F7',
+  Health: '#00C853',
+  Entertainment: '#3B82F6',
+  Utilities: '#06B6D4',
+  Other: '#6B7280'
+};
+
 export default function DashboardCharts() {
   const { data: trend } = useQuery({
     queryKey: ['analytics', 'trend'],
@@ -24,62 +35,87 @@ export default function DashboardCharts() {
       {
         label: 'Income',
         data: trend?.map(t => t.income) || [],
-        borderColor: '#10b981',
-        backgroundColor: '#10b981',
+        borderColor: '#00C853',
+        backgroundColor: '#00C853',
         tension: 0.4,
         fill: false,
       },
       {
         label: 'Expense',
         data: trend?.map(t => t.expense) || [],
-        borderColor: '#f43f5e',
-        backgroundColor: '#f43f5e',
+        borderColor: '#CC0000',
+        backgroundColor: '#CC0000',
         tension: 0.4,
         fill: false,
       }
     ]
   };
 
+  const lineOptions = {
+    maintainAspectRatio: false,
+    plugins: { 
+      legend: { 
+        position: 'top',
+        labels: { color: '#F5F5F5', font: { family: 'Inter', weight: 'bold' } } 
+      } 
+    },
+    scales: {
+      x: {
+        grid: { color: '#2D0000', drawBorder: false },
+        ticks: { color: '#B0A0A0', font: { family: 'Inter', weight: '600' } }
+      },
+      y: {
+        grid: { color: '#2D0000', drawBorder: false },
+        ticks: { color: '#B0A0A0', font: { family: 'Inter', weight: '600' }, callback: (v) => '₹' + v.toLocaleString('en-IN') }
+      }
+    }
+  };
+
+  const donutLabels = category?.map(c => c.category) || [];
+  const donutDataRaw = category?.map(c => c.total) || [];
+  const donutBgColors = donutLabels.map(cat => DONUT_COLORS[cat] || DONUT_COLORS.Other);
+
   const donutData = {
-    labels: category?.map(c => c.category) || [],
+    labels: donutLabels,
     datasets: [{
-      data: category?.map(c => c.total) || [],
-      backgroundColor: [
-        '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#0ea5e9', '#64748b', '#14b8a6', '#84cc16', '#f472b6', '#38bdf8', '#c084fc', '#fb923c'
-      ],
-      borderWidth: 0,
-      hoverOffset: 4
+      data: donutDataRaw,
+      backgroundColor: donutBgColors,
+      borderColor: '#1A0000',
+      borderWidth: 2,
+      hoverOffset: 6
     }]
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-      <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">6-Month Trend</h3>
+      <div className="lg:col-span-2 bg-ignite-card p-6 rounded-2xl shadow-ignite-card border border-ignite-border hover:border-ignite-bhover transition-all">
+        <h3 className="text-xl font-bold text-ignite-white mb-4 uppercase tracking-wider font-bebas">6-Month Trend</h3>
         <div className="h-72">
           {trend ? (
-            <Line 
-              data={lineData} 
-              options={{ maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }} 
-            />
+            <Line data={lineData} options={lineOptions} />
           ) : (
-            <div className="animate-pulse bg-gray-50 h-full rounded-xl w-full"></div>
+            <div className="animate-pulse bg-ignite-bg border border-ignite-border h-full rounded-xl w-full"></div>
           )}
         </div>
       </div>
       
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Expense Breakdown</h3>
+      <div className="bg-ignite-card p-6 rounded-2xl shadow-ignite-card border border-ignite-border hover:border-ignite-bhover transition-all">
+        <h3 className="text-xl font-bold text-ignite-white mb-4 uppercase tracking-wider font-bebas">Expense Breakdown</h3>
         <div className="h-72 flex justify-center pb-4">
            {category?.length > 0 ? (
              <Doughnut 
                data={donutData} 
                options={{ 
                  maintainAspectRatio: false, 
-                 cutout: '70%', 
+                 cutout: '72%', 
                  plugins: { 
-                   legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } },
+                   legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, color: '#B0A0A0', font: { family: 'Inter', weight: 'bold' } } },
                    tooltip: {
+                     backgroundColor: '#110000',
+                     titleColor: '#F5F5F5',
+                     bodyColor: '#F5F5F5',
+                     borderColor: '#2D0000',
+                     borderWidth: 1,
                      callbacks: {
                        label: function(context) {
                          let label = context.label || '';
@@ -95,8 +131,8 @@ export default function DashboardCharts() {
                }} 
              />
            ) : (
-             <div className="text-sm text-gray-500 flex items-center justify-center h-full w-full bg-gray-50 rounded-xl">
-               No expenses this month
+             <div className="text-sm text-ignite-muted font-bold flex items-center justify-center h-full w-full bg-ignite-bg rounded-xl border border-ignite-border">
+               NO EXPENSES THIS MONTH
              </div>
            )}
         </div>

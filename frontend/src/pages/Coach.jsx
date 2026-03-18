@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 export default function Coach() {
   const { user } = useAuth();
   const [messages, setMessages] = useState([
-    { id: 1, role: 'assistant', content: `Hello ${user?.name}, I'm your AI Wealth Coach. Need help analyzing your spending, reviewing your investments, or planning for taxes?` }
+    { id: 1, role: 'assistant', content: `Hello ${user?.name}, I'm your AI Wealth Coach running the Ignite protocol. How can I optimize your capital today?` }
   ]);
   const [input, setInput] = useState('');
   const chatEndRef = useRef(null);
@@ -24,7 +24,7 @@ export default function Coach() {
       setMessages(prev => [...prev, { id: Date.now(), role: 'assistant', content: res.data.data }]);
     },
     onError: () => {
-      setMessages(prev => [...prev, { id: Date.now(), role: 'assistant', content: "I'm having trouble connecting to my neural network right now. Please check your API keys or try again later." }]);
+      setMessages(prev => [...prev, { id: Date.now(), role: 'assistant', content: "SYSTEM FAILURE: Connection broken to the Ignite neural core. Verify API configurations." }]);
     }
   });
 
@@ -43,79 +43,90 @@ export default function Coach() {
   }, [messages, chatMutation.isPending]);
 
   return (
-    <div className="space-y-6 flex flex-col h-[calc(100vh-8rem)] animate-in fade-in duration-500">
+    <div className="space-y-6 flex flex-col h-[calc(100vh-8rem)] animate-fade-in pb-10">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
         <div>
-           <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-             AI Wealth Coach <Bot className="w-6 h-6 ml-2 text-indigo-600" />
+           <h1 className="text-4xl font-bebas tracking-[2px] text-ignite-white flex items-center">
+             AI Wealth Coach <Bot className="w-8 h-8 ml-3 text-ignite-red drop-shadow-[0_0_8px_rgba(204,0,0,0.5)] bg-ignite-card p-1 border border-ignite-border rounded-lg" />
            </h1>
-           <p className="text-gray-500 text-sm mt-1">Get personalized financial insights instantly.</p>
+           <p className="text-ignite-muted font-bold mt-1 text-sm uppercase tracking-widest">Real-time deep learning insight engine</p>
         </div>
 
         {/* Gamification Strip */}
-        <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
-           <div className="flex items-center text-sm font-bold text-orange-500">
+        <div className="flex items-center gap-4 bg-ignite-card px-5 py-3 rounded-2xl shadow-ignite-card border border-ignite-border">
+           <div className="flex items-center text-sm font-black text-ignite-alert">
               <Flame className="w-5 h-5 mr-1" />
-              {gamification?.currentStreak || 0} Month Streak
+              {gamification?.currentStreak || 0} WEEK STREAK
            </div>
-           <div className="w-px h-6 bg-gray-200"></div>
-           <div className="flex items-center text-sm font-bold text-yellow-500">
+           <div className="w-px h-6 bg-ignite-border"></div>
+           <div className="flex items-center text-sm font-black text-ignite-warning drop-shadow-[0_0_8px_rgba(255,179,0,0.3)]">
               <Trophy className="w-5 h-5 mr-1" />
-              {gamification?.badge || 'Starter'}
+              {gamification?.badge || 'OPERATOR'}
            </div>
         </div>
       </div>
 
-      <div className="flex-1 bg-white border border-gray-100 rounded-2xl shadow-sm flex flex-col overflow-hidden">
+      <div className="flex-1 bg-ignite-bg border border-ignite-border rounded-2xl shadow-ignite-card flex flex-col overflow-hidden">
         {/* Chat window */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50/50">
+        <div className="flex-1 p-6 overflow-y-auto space-y-6 bg-ignite-bg/50 scrollbar-thin scrollbar-thumb-ignite-border scrollbar-track-transparent">
           {messages.map((m) => (
             <div key={m.id} className={cn("flex items-start max-w-[85%]", m.role === 'user' ? "ml-auto flex-row-reverse" : "")}>
               <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm border",
-                m.role === 'user' ? "bg-indigo-100 border-indigo-200 text-indigo-700 ml-3" : "bg-white border-gray-200 text-indigo-600 mr-3"
+                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-md border",
+                m.role === 'user' ? "bg-ignite-red border-ignite-red text-ignite-white ml-4 shadow-ignite-card" : "bg-ignite-card border-ignite-border text-ignite-red mr-4 shadow-sm"
               )}>
-                {m.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                {m.role === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
               </div>
               <div className={cn(
-                "px-4 py-3 rounded-2xl text-sm leading-relaxed",
-                m.role === 'user' ? "bg-indigo-600 text-white rounded-tr-none" : "bg-white border border-gray-100 text-gray-700 shadow-sm rounded-tl-none"
+                "px-5 py-4 rounded-3xl text-[15px] font-medium leading-relaxed shadow-sm",
+                m.role === 'user' ? "bg-ignite-red text-ignite-white rounded-tr-none shadow-ignite-card" : "bg-ignite-card border border-ignite-border text-ignite-white rounded-tl-none shadow-md"
               )}>
                 {m.content}
               </div>
             </div>
           ))}
           {chatMutation.isPending && (
-             <div className="flex items-center max-w-[85%]">
-               <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-white border border-gray-200 text-indigo-600 mr-3 shadow-sm">
-                 <Bot className="w-4 h-4" />
+             <div className="flex items-center max-w-[85%] animate-fade-in">
+               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-ignite-card border border-ignite-border text-ignite-red mr-4 shadow-sm">
+                 <Bot className="w-5 h-5" />
                </div>
-               <div className="px-4 py-3 bg-white border border-gray-100 rounded-2xl rounded-tl-none shadow-sm flex items-center space-x-2">
-                 <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"></div>
-                 <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                 <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+               <div className="px-5 py-4 bg-ignite-card border border-ignite-border rounded-3xl rounded-tl-none shadow-md flex items-center space-x-2">
+                 <div className="w-2.5 h-2.5 bg-ignite-red rounded-full animate-pulse shadow-[0_0_5px_rgba(204,0,0,0.8)]"></div>
+                 <div className="w-2.5 h-2.5 bg-ignite-red rounded-full animate-pulse shadow-[0_0_5px_rgba(204,0,0,0.8)]" style={{ animationDelay: '200ms' }}></div>
+                 <div className="w-2.5 h-2.5 bg-ignite-red rounded-full animate-pulse shadow-[0_0_5px_rgba(204,0,0,0.8)]" style={{ animationDelay: '400ms' }}></div>
                </div>
              </div>
           )}
           <div ref={chatEndRef}></div>
         </div>
 
+        {/* Quick Suggestion Chips */}
+        {messages.length < 3 && !chatMutation.isPending && (
+           <div className="bg-ignite-bg px-6 py-2 flex gap-2 overflow-x-auto border-t border-ignite-border/30">
+              {['Analyze my spending this month', 'What is the 50/30/20 rule?', 'How do I save on 80C taxes?'].map(txt => (
+                 <button key={txt} onClick={()=>setInput(txt)} className="text-xs font-bold text-ignite-red border border-ignite-red px-4 py-2 rounded-xl whitespace-nowrap hover:bg-ignite-red hover:text-white transition-colors shadow-[0_0_10px_rgba(204,0,0,0.1)]">
+                    {txt}
+                 </button>
+              ))}
+           </div>
+        )}
+
         {/* Input box */}
-        <div className="p-4 border-t border-gray-100 bg-white">
-          <form onSubmit={handleSend} className="flex gap-3">
+        <div className="p-5 border-t border-ignite-border bg-ignite-card">
+          <form onSubmit={handleSend} className="flex gap-4">
             <input 
               type="text" 
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about your budget, investments, or get a tax saving tip..."
-              className="flex-1 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block px-4 py-3 outline-none transition-colors"
+              placeholder="Query the system or request financial heuristics..."
+              className="flex-1 bg-ignite-side border border-ignite-border text-ignite-white text-[15px] font-medium rounded-2xl focus:shadow-ignite-focus focus:border-ignite-red block px-5 py-4 outline-none transition-all placeholder-[#6B5555]"
             />
             <button 
               type="submit" 
               disabled={chatMutation.isPending || !input.trim()}
-              className="px-4 py-3 bg-indigo-600 text-white rounded-xl shadow-sm hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center"
+              className="px-6 py-4 bg-ignite-red text-ignite-white rounded-2xl shadow-ignite-card hover:bg-ignite-hover hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center font-bold"
             >
-              <Send className="w-5 h-5" />
+              <Send className="w-6 h-6 mr-2" /> SEND
             </button>
           </form>
         </div>

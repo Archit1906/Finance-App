@@ -115,26 +115,44 @@ const seedDB = async () => {
     // 5. Insert Goals
     await query(
       `INSERT INTO goals (user_id, name, category, target_amount, saved_amount, monthly_sip, target_date) VALUES 
-      ($1, 'Europe Trip', 'Travel', 300000, 120000, 15000, CURRENT_DATE + 365),
-      ($1, 'Emergency Fund', 'Savings', 500000, 450000, 20000, CURRENT_DATE + 180)`,
+      ($1, 'Europe Trip', 'Travel', 300000, 120000, 15000, '2026-12-01'),
+      ($1, 'Emergency Fund', 'Savings', 500000, 450000, 10000, '2026-06-01'),
+      ($1, 'New Laptop', 'Gadget', 120000, 108000, 6000, '2026-04-01'),
+      ($1, 'House Down Payment', 'House', 2000000, 300000, 25000, '2029-12-01'),
+      ($1, 'Retirement Fund', 'Retirement', 20000000, 500000, 8000, '2045-01-01')`,
       [userId]
     );
     console.log("Goals seeded.");
 
-    // 6. Insert Loans & Subscriptions
+    // 6. Insert Loans & Subscriptions & Tax
     await query(
-      `INSERT INTO loans (user_id, lender_name, principal, outstanding, interest_rate, emi_amount, tenure_months) VALUES 
-      ($1, 'HDFC Bank Auto Loan', 800000, 650000, 8.5, 17500, 60)`,
+      `INSERT INTO loans (user_id, lender_name, principal, outstanding, interest_rate, emi_amount, tenure_months, start_date) VALUES 
+      ($1, 'HDFC Bank Auto Loan', 800000, 650000, 8.5, 17500, 60, '2022-01-01'),
+      ($1, 'SBI Home Loan', 5000000, 3800000, 8.75, 42000, 240, '2019-04-01'),
+      ($1, 'ICICI Personal Loan', 300000, 120000, 14, 9500, 36, '2023-06-01')`,
       [userId]
     );
     
     await query(
       `INSERT INTO subscriptions (user_id, name, amount, frequency, next_due, category) VALUES 
-      ($1, 'Netflix', 649, 'monthly', CURRENT_DATE + 10, 'Entertainment'),
-      ($1, 'Spotify', 119, 'monthly', CURRENT_DATE + 5, 'Entertainment')`,
+      ($1, 'Netflix', 649, 'monthly', CURRENT_DATE + 10, 'Streaming'),
+      ($1, 'Spotify', 119, 'monthly', CURRENT_DATE + 5, 'Streaming'),
+      ($1, 'Amazon Prime', 1499, 'yearly', CURRENT_DATE + 80, 'Streaming'),
+      ($1, 'Gym Membership', 2000, 'monthly', CURRENT_DATE + 3, 'Fitness'),
+      ($1, 'Jio Postpaid', 999, 'monthly', CURRENT_DATE + 1, 'Utility'),
+      ($1, 'Google One', 130, 'monthly', CURRENT_DATE + 18, 'Software'),
+      ($1, 'Zerodha Kite', 0, 'yearly', CURRENT_DATE + 300, 'Other'),
+      ($1, 'HDFC Life Insurance', 12000, 'yearly', CURRENT_DATE + 120, 'Insurance')`,
       [userId]
     );
-    
+
+    await query(
+      `INSERT INTO tax_investments (user_id, scheme, amount, financial_year) VALUES 
+      ($1, 'ELSS', 50000, '2025-26'),
+      ($1, 'PPF', 30000, '2025-26'),
+      ($1, 'LIC', 15000, '2025-26')`,
+      [userId]
+    );
     // Add net worth snapshot
     await query(
       `INSERT INTO net_worth_snapshots (user_id, total_assets, total_liabilities, net_worth, snapshot_date) VALUES 

@@ -19,6 +19,26 @@ export const addLoan = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+export const updateLoan = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { lender_name, principal, outstanding, interest_rate, emi_amount, tenure_months, start_date } = req.body;
+    const result = await query(
+      `UPDATE loans 
+       SET lender_name=COALESCE($1, lender_name), 
+           principal=COALESCE($2, principal), 
+           outstanding=COALESCE($3, outstanding), 
+           interest_rate=COALESCE($4, interest_rate), 
+           emi_amount=COALESCE($5, emi_amount), 
+           tenure_months=COALESCE($6, tenure_months), 
+           start_date=COALESCE($7, start_date)
+       WHERE id=$8 AND user_id=$9 RETURNING *`,
+      [lender_name, principal, outstanding, interest_rate, emi_amount, tenure_months, start_date, id, req.user.id]
+    );
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) { next(err); }
+};
+
 export const deleteLoan = async (req, res, next) => {
   try {
     const { id } = req.params;

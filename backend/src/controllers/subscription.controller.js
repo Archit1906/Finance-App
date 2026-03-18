@@ -19,6 +19,24 @@ export const addSubscription = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+export const updateSubscription = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { name, amount, frequency, next_due, category } = req.body;
+    const result = await query(
+      `UPDATE subscriptions 
+       SET name=COALESCE($1, name), 
+           amount=COALESCE($2, amount), 
+           frequency=COALESCE($3, frequency), 
+           next_due=COALESCE($4, next_due), 
+           category=COALESCE($5, category)
+       WHERE id=$6 AND user_id=$7 RETURNING *`,
+      [name, amount, frequency, next_due, category, id, req.user.id]
+    );
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) { next(err); }
+};
+
 export const deleteSubscription = async (req, res, next) => {
   try {
     const { id } = req.params;

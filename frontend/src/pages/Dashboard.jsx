@@ -25,92 +25,95 @@ export default function Dashboard() {
 
   // SVG Progress Ring Logic
   const getHealthRing = () => {
-    if (loadingHealth) return <div className="w-12 h-12 rounded-full animate-pulse bg-gray-200"></div>;
-    if (errorHealth) return <div className="text-xs text-red-500">Failed to load</div>;
+    if (loadingHealth) return <div className="w-12 h-12 rounded-full animate-pulse bg-ignite-border"></div>;
+    if (errorHealth) return <div className="text-xs text-ignite-alert font-bold">Failed to load</div>;
     if (!health) return null;
 
     const score = Math.round(health.score);
     const radius = 20;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (score / 100) * circumference;
-    const colorClass = score >= 70 ? 'text-emerald-500' : score >= 40 ? 'text-amber-500' : 'text-rose-500';
+    const colorClass = 'text-ignite-red';
 
     return (
-      <div className="flex items-center space-x-3 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="flex items-center space-x-3 bg-ignite-card px-4 py-3 rounded-2xl border border-ignite-border shadow-md">
         <div className="relative w-12 h-12 flex items-center justify-center">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 48 48">
-            <circle className="text-gray-100 stroke-current" strokeWidth="4" fill="transparent" r={radius} cx="24" cy="24" />
+            <circle className="text-ignite-border stroke-current" strokeWidth="4" fill="transparent" r={radius} cx="24" cy="24" />
             <circle 
               className={`${colorClass} stroke-current transition-all duration-1000 ease-in-out`} 
               strokeWidth="4" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} 
               fill="transparent" r={radius} cx="24" cy="24" 
             />
           </svg>
-          <span className="absolute text-xs font-bold text-gray-700">{score}</span>
+          <span className="absolute text-xs font-black text-ignite-white">{score}</span>
         </div>
         <div>
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Health Score</p>
-          <p className="text-sm font-semibold text-gray-900">{score >= 70 ? 'Excellent Track' : score >= 40 ? 'Needs Attention' : 'Critical'}</p>
+          <p className="text-xs text-ignite-muted font-bold uppercase tracking-widest">Health Score</p>
+          <p className="text-sm font-bold text-ignite-white">{score >= 70 ? 'Excellent Track' : score >= 40 ? 'Needs Attention' : 'Critical'}</p>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-fade-in pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user?.name}</h1>
-          <p className="text-gray-500 mt-1">Here is your financial summary for this month.</p>
+          <h1 className="text-[32px] font-bebas tracking-[2px] text-ignite-white flex items-center">
+            Welcome back, {user?.name}
+            <span className="ml-3 px-2 py-0.5 rounded text-[10px] font-sans font-black bg-ignite-red/20 border border-ignite-red text-ignite-red uppercase tracking-widest mt-1">Ignite Phase Active</span>
+          </h1>
+          <p className="text-ignite-muted font-medium mt-[-4px]">Here is your structural financial summary for this month.</p>
         </div>
         
         {getHealthRing()}
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-            <Target className="w-16 h-16 text-indigo-600" />
+        <div className="bg-ignite-card p-6 rounded-2xl shadow-md border-y border-r border-y-ignite-border border-r-ignite-border border-l-[4px] border-l-ignite-red hover:shadow-ignite-card hover:border-y-ignite-bhover hover:border-r-ignite-bhover transition-all relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:scale-110 transition-transform">
+            <Target className="w-20 h-20 text-ignite-white" />
           </div>
-          <h3 className="text-gray-500 text-sm font-medium">Net Worth</h3>
+          <h3 className="text-ignite-muted text-[13px] font-bold uppercase tracking-wider">Net Worth</h3>
           {loadingNetworth ? (
-             <div className="h-8 w-32 bg-gray-200 animate-pulse rounded mt-2"></div>
+             <div className="h-8 w-32 bg-ignite-border animate-pulse rounded mt-2"></div>
           ) : errorNetworth ? (
-             <div className="text-sm text-red-500 mt-2">Error loading data</div>
+             <div className="text-sm text-ignite-alert font-bold mt-2">Error loading data</div>
           ) : (
-             <p className="text-3xl font-bold text-gray-900 mt-2">
+             <p className="text-4xl font-black text-ignite-white mt-1 tracking-tight">
                ₹{networth?.net_worth ? Number(networth.net_worth).toLocaleString('en-IN') : '0'}
              </p>
           )}
         </div>
         
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-            <TrendingUp className="w-16 h-16 text-emerald-600" />
+        <div className="bg-ignite-card p-6 rounded-2xl shadow-md border-y border-r border-y-ignite-border border-r-ignite-border border-l-[4px] border-l-ignite-success hover:shadow-ignite-card hover:border-y-ignite-bhover hover:border-r-ignite-bhover transition-all relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:scale-110 transition-transform">
+            <TrendingUp className="w-20 h-20 text-ignite-white" />
           </div>
-          <h3 className="text-gray-500 text-sm font-medium">Monthly Income</h3>
+          <h3 className="text-ignite-muted text-[13px] font-bold uppercase tracking-wider">Monthly Income</h3>
           {loadingSummary ? (
-             <div className="h-8 w-32 bg-gray-200 animate-pulse rounded mt-2"></div>
+             <div className="h-8 w-32 bg-ignite-border animate-pulse rounded mt-2"></div>
           ) : errorSummary ? (
-             <div className="text-sm text-red-500 mt-2">Error loading data</div>
+             <div className="text-sm text-ignite-alert font-bold mt-2">Error loading data</div>
           ) : (
-             <p className="text-3xl font-bold text-emerald-600 mt-2">
+             <p className="text-4xl font-black text-ignite-success mt-1 tracking-tight">
                ₹{summary?.income ? Number(summary.income).toLocaleString('en-IN') : '0'}
              </p>
           )}
         </div>
         
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-            <TrendingDown className="w-16 h-16 text-rose-600" />
+        <div className="bg-ignite-card p-6 rounded-2xl shadow-md border-y border-r border-y-ignite-border border-r-ignite-border border-l-[4px] border-l-ignite-alert hover:shadow-ignite-card hover:border-y-ignite-bhover hover:border-r-ignite-bhover transition-all relative overflow-hidden group">
+           <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:scale-110 transition-transform">
+            <TrendingDown className="w-20 h-20 text-ignite-white" />
           </div>
-          <h3 className="text-gray-500 text-sm font-medium">Monthly Expenses</h3>
+          <h3 className="text-ignite-muted text-[13px] font-bold uppercase tracking-wider">Monthly Expenses</h3>
           {loadingSummary ? (
-             <div className="h-8 w-32 bg-gray-200 animate-pulse rounded mt-2"></div>
+             <div className="h-8 w-32 bg-ignite-border animate-pulse rounded mt-2"></div>
           ) : errorSummary ? (
-             <div className="text-sm text-red-500 mt-2">Error loading data</div>
+             <div className="text-sm text-ignite-alert font-bold mt-2">Error loading data</div>
           ) : (
-             <p className="text-3xl font-bold text-rose-600 mt-2">
+             <p className="text-4xl font-black text-ignite-alert mt-1 tracking-tight">
                ₹{summary?.expense ? Number(summary.expense).toLocaleString('en-IN') : '0'}
              </p>
           )}

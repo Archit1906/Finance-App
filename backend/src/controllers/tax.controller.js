@@ -35,3 +35,27 @@ export const addTaxInvestment = async (req, res, next) => {
     res.status(201).json({ success: true, data: result.rows[0] });
   } catch (err) { next(err); }
 };
+
+export const updateTaxInvestment = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { scheme, amount, financial_year } = req.body;
+    const result = await query(
+      `UPDATE tax_investments 
+       SET scheme=COALESCE($1, scheme), 
+           amount=COALESCE($2, amount), 
+           financial_year=COALESCE($3, financial_year)
+       WHERE id=$4 AND user_id=$5 RETURNING *`,
+      [scheme, amount, financial_year, id, req.user.id]
+    );
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) { next(err); }
+};
+
+export const deleteTaxInvestment = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await query('DELETE FROM tax_investments WHERE id=$1 AND user_id=$2 RETURNING id', [id, req.user.id]);
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) { next(err); }
+};

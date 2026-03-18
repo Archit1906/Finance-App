@@ -22,10 +22,17 @@ export const createGoal = async (req, res, next) => {
 export const updateGoal = async (req, res, next) => {
   try {
      const { id } = req.params;
-     const { name, target_amount, monthly_sip, target_date } = req.body;
+     const { name, target_amount, monthly_sip, target_date, category, status } = req.body;
      const result = await query(
-       'UPDATE goals SET name=$1, target_amount=$2, monthly_sip=$3, target_date=$4 WHERE id=$5 AND user_id=$6 RETURNING *',
-       [name, target_amount, monthly_sip, target_date, id, req.user.id]
+       `UPDATE goals 
+        SET name=COALESCE($1, name), 
+            target_amount=COALESCE($2, target_amount), 
+            monthly_sip=COALESCE($3, monthly_sip), 
+            target_date=COALESCE($4, target_date),
+            category=COALESCE($5, category),
+            status=COALESCE($6, status)
+        WHERE id=$7 AND user_id=$8 RETURNING *`,
+       [name, target_amount, monthly_sip, target_date, category, status, id, req.user.id]
      );
      res.json({ success: true, data: result.rows[0] });
   } catch (err) { next(err); }
