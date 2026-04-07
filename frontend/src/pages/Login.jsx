@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Wallet, Scan, Fingerprint, Lock, Box, Globe } from 'lucide-react';
+import { Wallet, Scan, Fingerprint, Lock, Box, Globe, Settings, Key } from 'lucide-react';
 
-function TypewriterText({ text, active, delay = 0 }) {
+function TypewriterText({ text, active, delay = 0, fontClass = "font-mono" }) {
   const [disp, setDisp] = useState('');
   useEffect(() => {
     if(!active) return;
@@ -19,7 +19,7 @@ function TypewriterText({ text, active, delay = 0 }) {
     return () => clearTimeout(t2);
   }, [text, active, delay]);
 
-  return <span className="font-mono tracking-widest">{disp}<span className="animate-pulse">_</span></span>;
+  return <span className={`${fontClass} tracking-widest`}>{disp}<span className="animate-pulse">_</span></span>;
 }
 
 // Simulated rapid number counter on mount
@@ -102,7 +102,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden group/vault bg-vault-blueprint animate-system-pulse">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden group/vault bg-cotes-de-geneve animate-cotes-breathe">
       
       {/* Deep-Space Atmos Effects handled by bg-vault-blueprint and animate-system-pulse in index.css */}
 
@@ -110,50 +110,50 @@ export default function Login() {
       <div className="flex gap-4 mb-4 justify-center z-20 relative px-4">
         <div 
           onClick={() => handleModeSwitch('login')}
-          className={`flex items-center gap-2 px-6 py-2 border cursor-pointer transition-all duration-300 ${mode === 'login' ? 'border-[#00E5FF] bg-[#00E5FF]/10 text-[#00E5FF] shadow-[inset_0_0_15px_rgba(0,229,255,0.3)]' : 'border-[#333] bg-[#050B0D]/80 text-[#666] hover:border-[#666] hover:text-[#bbb]'}`}
+          className={`flex items-center gap-2 px-6 py-2 border cursor-pointer transition-all duration-300 font-sans ${mode === 'login' ? 'border-[#D4AF37] bg-[#1a1a1a] text-[#D4AF37] shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)] scale-95' : 'border-[#2F4F4F] bg-[#111111] text-[#666] hover:border-[#D4AF37] hover:bg-[#2F4F4F] hover:text-[#bbb] -translate-y-1 animate-button-compress'}`}
         >
-          <Lock className={`w-4 h-4 transition-colors ${mode === 'login' ? 'text-[#00E5FF] drop-shadow-[0_0_5px_#00E5FF]' : 'text-[#666]'}`} />
-          <span className="font-mono text-[11px] tracking-widest uppercase">MODE_001 [SECURE LOGIN]</span>
+          <Settings className={`w-4 h-4 transition-colors ${mode === 'login' ? 'text-[#D4AF37] animate-spin' : 'text-[#666]'}`} />
+          <span className="text-[11px] font-bold tracking-widest uppercase">MODE_001 [SECURE LOGIN]</span>
         </div>
         <div 
           onClick={() => handleModeSwitch('signup')}
-          className={`flex items-center gap-2 px-6 py-2 border cursor-pointer transition-all duration-300 ${mode === 'signup' ? 'border-[#FF8C00] bg-[#FF8C00]/10 text-[#FF8C00] shadow-[inset_0_0_15px_rgba(255,140,0,0.3)]' : 'border-[#333] bg-[#050B0D]/80 text-[#666] hover:border-[#666] hover:text-[#bbb]'}`}
+          className={`flex items-center gap-2 px-6 py-2 border cursor-pointer transition-all duration-300 font-sans ${mode === 'signup' ? 'border-[#FF8C00] bg-[#1a1a1a] text-[#FF8C00] shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)] scale-95' : 'border-[#2F4F4F] bg-[#111111] text-[#666] hover:border-[#D4AF37] hover:bg-[#2F4F4F] hover:text-[#bbb] -translate-y-1 animate-button-compress'}`}
         >
-          <Box className={`w-4 h-4 transition-colors ${mode === 'signup' ? 'text-[#FF8C00] drop-shadow-[0_0_5px_#FF8C00]' : 'text-[#666]'}`} />
-          <span className="font-mono text-[11px] tracking-widest uppercase">MODE_002 [NODE PROVISIONING]</span>
+          <Box className={`w-4 h-4 transition-colors ${mode === 'signup' ? 'text-[#FF8C00]' : 'text-[#666]'}`} />
+          <span className="text-[11px] font-bold tracking-widest uppercase">MODE_002 [NODE PROVISIONING]</span>
         </div>
       </div>
       
       {/* Central Glass Terminal */}
       <div className={`sm:mx-auto sm:w-full sm:max-w-md relative z-10 transition-all duration-500 ${isVerified ? 'animate-vault-spin' : ''} ${isAnimating ? 'animate-mode-switch' : ''}`}>
         
-        {showGoldDust && <div className="animate-gold-dust"></div>}
+        {showGoldDust && <div className="animate-gold-dust-burst"></div>}
         
         {/* Terminal Header */}
         <div className="flex flex-col items-center mb-6 relative">
           <div className="w-24 h-24 mb-4 rounded-2xl flex items-center justify-center relative">
-             <div className={`absolute inset-0 border rounded-2xl transform rotate-45 animate-pulse transition-colors duration-500 ${mode === 'signup' ? 'border-[#FF8C00]/20 shadow-[inset_0_0_20px_rgba(255,140,0,0.1)]' : 'border-[#00E5FF]/20 shadow-[inset_0_0_20px_rgba(0,229,255,0.1)]'}`}></div>
+             <div className={`absolute inset-0 border rounded-2xl transform rotate-45 transition-colors duration-500 ${mode === 'signup' ? 'border-[#FF8C00]/20 shadow-[inset_0_0_20px_rgba(255,140,0,0.1)]' : 'border-[#D4AF37]/40 shadow-[inset_0_0_20px_rgba(212,175,55,0.2)]'}`}></div>
              {mode === 'signup' ? (
                 <Box className="w-12 h-12 text-[#FF8C00] relative z-10 animate-ignition drop-shadow-[0_0_15px_#FF8C00]" />
              ) : (
-                <Wallet className="w-12 h-12 text-[#CC0000] relative z-10 animate-ignition drop-shadow-[0_0_15px_#CC0000]" />
+                <Wallet className="w-12 h-12 text-[#CC0000] relative z-10 animate-ignition-gold" />
              )}
           </div>
           
-          <h2 className={`text-2xl text-transparent bg-clip-text drop-shadow-md pb-1 transition-all duration-500 ${mode === 'signup' ? 'bg-gradient-to-r from-[#FF8C00] to-[#FFD700]' : 'bg-gradient-to-r from-[#00E5FF] to-[#ADFF2F]'}`}>
+          <h2 className={`text-2xl text-transparent bg-clip-text pb-1 transition-all duration-500 ${mode === 'signup' ? 'bg-gradient-to-r from-[#FF8C00] to-[#FFD700]' : 'text-engraved-gold bg-gradient-to-r from-[#D4AF37] to-[#F3E5AB]'}`}>
              {mode === 'signup' ? (
                  <TypewriterText text="PROVISION_NEW_WEALTH_NODE" active={mounted && mode === 'signup'} delay={0.1} />
              ) : (
-                 <TypewriterText text="SIGN_IN_TO_WEALTH_OS" active={mounted && mode === 'login'} delay={0.1} />
+                 <TypewriterText fontClass="font-sans font-bold" text="SIGN_IN_TO_WEALTH_OS" active={mounted && mode === 'login'} delay={0.1} />
              )}
           </h2>
         </div>
 
         {/* Data Entry Panel */}
-        <div className={`backdrop-blur-xl py-8 px-6 sm:rounded-none sm:px-10 border relative overflow-hidden transition-colors duration-500 ${mode === 'signup' ? 'bg-[#050505]/80 shadow-[0_0_50px_rgba(0,0,0,0.9),inset_0_0_20px_rgba(255,140,0,0.15)] border-[#FF8C00]/30' : 'bg-[#050B0D]/80 shadow-[0_0_50px_rgba(0,0,0,0.9),inset_0_0_20px_rgba(0,229,255,0.15)] border-[#00E5FF]/30'}`}>
+        <div className={`py-8 px-6 sm:rounded-none sm:px-10 border relative overflow-hidden transition-colors duration-500 ${mode === 'signup' ? 'bg-[#050505]/80 shadow-[0_0_50px_rgba(0,0,0,0.9),inset_0_0_20px_rgba(255,140,0,0.15)] border-[#FF8C00]/30' : 'bg-sunray shadow-[inset_0_2px_10px_rgba(0,0,0,0.8),0_4px_12px_rgba(0,0,0,0.9)] plate-border'}`}>
           
           {/* Subtle moving scanline in the card edge */}
-          <div className={`absolute top-0 left-0 w-full h-[1px] translate-x-[-100%] animate-[scan_3s_linear_infinite] ${mode === 'signup' ? 'bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent' : 'bg-gradient-to-r from-transparent via-[#00E5FF] to-transparent'}`}></div>
+          <div className={`absolute top-0 left-0 w-full h-[1px] ${mode === 'signup' ? 'translate-x-[-100%] animate-[scan_3s_linear_infinite] bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent' : 'animate-gold-scanline bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent'}`}></div>
 
           <form className="space-y-8 relative z-10" onSubmit={handleSubmit}>
             
@@ -187,13 +187,13 @@ export default function Login() {
                  required
                  value={email}
                  onChange={(e) => setEmail(e.target.value)}
-                 className={`peer block w-full px-0 py-2 bg-transparent border-0 border-b border-[#222] font-mono text-sm tracking-wider focus:outline-none focus:ring-0 transition-colors shadow-none hover:border-[#444] ${mode === 'signup' ? 'text-[#FF8C00] focus:border-[#FF8C00]' : 'text-[#00E5FF] focus:border-[#00E5FF]'}`}
+                 className={`peer block w-full px-0 py-2 bg-transparent border-0 border-b border-[#2F4F4F] font-mono text-sm tracking-wider focus:outline-none focus:ring-0 transition-colors shadow-none hover:border-[#D4AF37]/50 caret-[#D4AF37] ${mode === 'signup' ? 'text-[#FF8C00] focus:border-[#FF8C00]' : 'text-[#e0e0e0] focus:border-[#D4AF37]'}`}
                  placeholder=" "
                />
-               <label className={`absolute left-0 top-2 text-[#888] font-mono text-[11px] uppercase tracking-[0.2em] transition-all duration-300 peer-focus:-top-4 peer-focus:text-[9px] peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-[9px] pointer-events-none ${mode === 'signup' ? 'peer-focus:text-[#FF8C00] peer-not-placeholder-shown:text-[#FF8C00]' : 'peer-focus:text-[#00E5FF] peer-not-placeholder-shown:text-[#00E5FF]'}`}>
+               <label className={`absolute left-0 top-2 text-[#888] font-mono text-[11px] uppercase tracking-[0.2em] transition-all duration-300 peer-focus:-top-4 peer-focus:text-[9px] peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-[9px] pointer-events-none ${mode === 'signup' ? 'peer-focus:text-[#FF8C00] peer-not-placeholder-shown:text-[#FF8C00]' : 'peer-focus:text-[#D4AF37] peer-not-placeholder-shown:text-[#D4AF37]'}`}>
                  SYSTEM_ID [EMAIL]
                </label>
-               <div className={`absolute bottom-0 left-0 h-[1px] w-0 peer-focus:w-full transition-all duration-500 ${mode === 'signup' ? 'bg-[#FF8C00] shadow-[0_0_10px_#FF8C00]' : 'bg-[#00E5FF] shadow-[0_0_10px_#00E5FF]'}`}></div>
+               <div className={`absolute bottom-0 left-0 h-[1px] w-0 peer-focus:w-full transition-all duration-500 ${mode === 'signup' ? 'bg-[#FF8C00] shadow-[0_0_10px_#FF8C00]' : 'bg-[#D4AF37] shadow-[0_0_10px_#D4AF37]'}`}></div>
             </div>
 
             {/* Password Field */}
@@ -203,27 +203,29 @@ export default function Login() {
                  required
                  value={password}
                  onChange={(e) => setPassword(e.target.value)}
-                 className="peer block w-full px-0 py-2 bg-transparent border-0 border-b border-[#222] text-[#ADFF2F] font-mono text-lg tracking-[0.4em] focus:outline-none focus:ring-0 focus:border-[#ADFF2F] transition-colors shadow-none hover:border-[#444]"
+                 className={`peer block w-full px-0 py-2 bg-transparent border-0 border-b border-[#2F4F4F] font-mono text-xl tracking-[0.5em] focus:outline-none focus:ring-0 transition-colors shadow-none hover:border-[#D4AF37]/50 caret-[#D4AF37] ${mode === 'signup' ? 'text-[#ADFF2F] focus:border-[#ADFF2F]' : 'text-[#D4AF37] focus:border-[#D4AF37]'}`}
                  placeholder=" "
                />
-               <label className="absolute left-0 top-2 text-[#888] font-mono text-[11px] uppercase tracking-[0.2em] transition-all duration-300 peer-focus:-top-4 peer-focus:text-[9px] peer-focus:text-[#ADFF2F] peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-[9px] peer-not-placeholder-shown:text-[#ADFF2F] pointer-events-none">
+               <label className={`absolute left-0 top-2 text-[#888] font-mono text-[11px] uppercase tracking-[0.2em] transition-all duration-300 peer-focus:-top-4 peer-focus:text-[9px] peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-[9px] pointer-events-none ${mode === 'signup' ? 'peer-focus:text-[#ADFF2F] peer-not-placeholder-shown:text-[#ADFF2F]' : 'peer-focus:text-[#D4AF37] peer-not-placeholder-shown:text-[#D4AF37]'}`}>
                  BIOMETRIC_KEY [PASSWORD]
                </label>
-               <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-[#ADFF2F] peer-focus:w-full transition-all duration-500 shadow-[0_0_10px_#ADFF2F]"></div>
+               <div className={`absolute bottom-0 left-0 h-[1px] w-0 peer-focus:w-full transition-all duration-500 ${mode === 'signup' ? 'bg-[#ADFF2F] shadow-[0_0_10px_#ADFF2F]' : 'bg-[#D4AF37] shadow-[0_0_10px_#D4AF37]'}`}></div>
             </div>
 
             <div className="flex items-center justify-between pt-2">
               {mode === 'login' ? (
                 <>
                   <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setRememberMe(!rememberMe)}>
-                    <div className={`w-8 h-4 border transition-colors flex items-center px-0.5 ${rememberMe ? 'border-[#00E5FF] bg-[#00E5FF]/10' : 'border-[#333] bg-[#111]'}`}>
-                       <div className={`w-2 h-2 bg-current transform transition-transform ${rememberMe ? 'text-[#00E5FF] translate-x-4 shadow-[0_0_5px_#00E5FF]' : 'text-[#555] translate-x-0'}`}></div>
+                    <div className={`w-8 h-4 border transition-colors flex items-center px-0.5 ${rememberMe ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-[#333] bg-[#111]'}`}>
+                       <Scan className={`w-3 h-3 transition-transform ${rememberMe ? 'text-[#D4AF37] translate-x-3 animate-spin shadow-[0_0_5px_#D4AF37]' : 'text-[#555] translate-x-0'}`} />
                     </div>
-                    <label className="text-[9px] font-mono text-[#888] tracking-[0.2em] uppercase group-hover:text-[#E0E0E0] cursor-pointer">
-                      Persist Session
-                    </label>
+                    <div className="px-2 py-0.5 border border-[#D4AF37]/30 bg-[#1A1A1A] shadow-[inset_0_1px_2px_rgba(0,0,0,0.8),0_1px_0_rgba(255,255,255,0.1)]">
+                       <label className="text-[9px] font-sans font-bold text-[#D4AF37] tracking-[0.1em] uppercase group-hover:text-[#F3E5AB] cursor-pointer">
+                         Persist Session
+                       </label>
+                    </div>
                   </div>
-                  <a href="#" className="text-[9px] font-mono text-[#CC0000] tracking-[0.2em] uppercase hover:text-[#FF4444] hover:drop-shadow-[0_0_5px_#FF4444] transition-all">
+                  <a href="#" className="text-[9px] font-sans font-bold text-[#8B0000] tracking-[0.2em] uppercase hover:text-[#CC0000] hover:drop-shadow-[0_0_5px_#CC0000] transition-all animate-pulse">
                     Override Code?
                   </a>
                 </>
@@ -255,29 +257,35 @@ export default function Login() {
             </div>
 
             <div className="pt-6 relative group/btn">
+              {mode === 'login' && (
+                 <div className="absolute -bottom-4 right-2 opacity-30 z-0">
+                    <Settings className="w-8 h-8 text-[#D4AF37] animate-tourbillon-tick drop-shadow-[0_0_2px_#D4AF37]" />
+                 </div>
+              )}
+            
               {/* Outer Button Glow wrapper */}
-              <div className={`absolute inset-0 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-out z-0 pointer-events-none blur-[10px] opacity-0 group-hover/btn:opacity-60 ${mode === 'signup' ? 'bg-[#FF8C00]' : 'bg-[#FF8C00]'}`}></div>
+              <div className={`absolute inset-0 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-out z-0 pointer-events-none blur-[10px] opacity-0 group-hover/btn:opacity-60 ${mode === 'signup' ? 'bg-[#FF8C00]' : 'bg-[#8B0000]'}`}></div>
               
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full relative flex justify-center py-4 px-4 border overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${mode === 'signup' ? 'bg-[#1A0A00] border-[#FF8C00]/50 hover:border-[#FFD700] shadow-[inset_0_0_15px_rgba(255,140,0,0.2)] hover:shadow-[inset_0_0_30px_rgba(255,215,0,0.4)]' : 'bg-[#1A0000] border-[#CC0000]/50 hover:border-[#FF8C00] shadow-[inset_0_0_15px_rgba(204,0,0,0.2)] hover:shadow-[inset_0_0_30px_rgba(255,140,0,0.4)]'}`}
+                className={`w-full relative flex justify-center py-4 px-4 border overflow-hidden transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${mode === 'signup' ? 'bg-[#1A0A00] border-[#FF8C00]/50 hover:border-[#FFD700] shadow-[inset_0_0_15px_rgba(255,140,0,0.2)] hover:shadow-[inset_0_0_30px_rgba(255,215,0,0.4)]' : 'bg-[#2a0808] border-[#8B0000] hover:border-[#D4AF37] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_4px_10px_rgba(0,0,0,0.8)] hover:shadow-[inset_0_2px_5px_rgba(212,175,55,0.4),0_6px_15px_rgba(0,0,0,0.9)] transform group-hover/btn:-translate-y-0.5 z-10'}`}
               >
                 {/* Internal Hover Fill */}
-                <div className={`absolute inset-0 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-out pointer-events-none ${mode === 'signup' ? 'bg-gradient-to-t from-[#FFD700]/30 to-transparent' : 'bg-gradient-to-t from-[#FF8C00]/40 to-transparent'}`}></div>
+                <div className={`absolute inset-0 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-out pointer-events-none ${mode === 'signup' ? 'bg-gradient-to-t from-[#FFD700]/30 to-transparent' : 'bg-gradient-to-t from-[#D4AF37]/30 to-transparent'}`}></div>
 
                 {isSubmitting ? (
-                  <div className="flex items-center text-[#00E5FF] font-mono tracking-widest text-[11px] drop-shadow-[0_0_8px_#00E5FF]">
-                     <Scan className="w-5 h-5 animate-spin mr-3" />
-                     {mode === 'signup' ? 'PROVISIONING...' : 'VERIFYING_CREDENTIALS...'}
+                  <div className="flex items-center text-[#D4AF37] font-mono tracking-widest text-[11px] drop-shadow-[0_0_8px_#D4AF37]">
+                     {mode === 'signup' ? <Scan className="w-5 h-5 animate-spin mr-3" /> : <Key className="w-5 h-5 animate-spin mr-3 text-[#00E5FF]" />}
+                     {mode === 'signup' ? 'PROVISIONING...' : <span className="text-[#00E5FF]">VERIFYING_CREDENTIALS...</span>}
                   </div>
                 ) : isVerified ? (
-                  <div className="flex items-center text-[#ADFF2F] font-mono font-bold tracking-[0.3em] text-[12px] drop-shadow-[0_0_10px_#ADFF2F]">
-                     <Fingerprint className="w-5 h-5 mr-3 animate-pulse" />
-                     {mode === 'signup' ? 'NODE_CREATED' : 'ACCESS_GRANTED'}
+                  <div className="flex items-center text-[#D4AF37] font-mono font-bold tracking-[0.3em] text-[12px] drop-shadow-[0_0_10px_#D4AF37]">
+                     {mode === 'signup' ? <Fingerprint className="w-5 h-5 mr-3 animate-pulse text-[#ADFF2F]" /> : <Key className="w-5 h-5 mr-3 animate-spin text-[#00E5FF]" />}
+                     {mode === 'signup' ? 'NODE_CREATED' : <span className="text-[#00E5FF]">ACCESS_GRANTED</span>}
                   </div>
                 ) : (
-                  <span className={`relative z-10 text-[11px] font-mono font-bold tracking-[0.3em] uppercase drop-shadow-[0_0_5px_currentColor] transition-colors ${mode === 'signup' ? 'text-[#FF8C00] group-hover/btn:text-[#FFD700]' : 'text-[#CC0000] group-hover/btn:text-[#FF8C00]'}`}>
+                  <span className={`relative z-10 text-[11px] font-sans font-bold tracking-[0.3em] uppercase drop-shadow-[0_0_2px_currentColor] transition-colors ${mode === 'signup' ? 'text-[#FF8C00] group-hover/btn:text-[#FFD700]' : 'text-[#e0e0e0] group-hover/btn:text-[#D4AF37]'}`}>
                     {mode === 'signup' ? 'INITIATE_NODE_CREATION_PROTOCOL' : 'Execute Safe-Login'}
                   </span>
                 )}

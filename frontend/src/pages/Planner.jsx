@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { cn } from '../lib/utils';
-import { Calculator, Calendar, Landmark, Plus, Trash2, Edit2, ChevronDown, ChevronUp, AlertCircle, PlayCircle, Home, Car, CreditCard, BookOpen, Gift, Shield, Activity, Monitor, Coffee } from 'lucide-react';
+import { Calculator, Calendar, Landmark, Plus, Trash2, Edit2, ChevronDown, ChevronUp, AlertCircle, PlayCircle, Home, Car, CreditCard, BookOpen, Gift, Shield, Activity, Monitor, Coffee, Settings } from 'lucide-react';
 
 const formatInr = (num) => Number(Math.max(0, num || 0)).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 
@@ -14,17 +14,17 @@ const SUB_CATS = {
   'Streaming': Monitor, 'Fitness': Activity, 'Software': Calculator, 'Insurance': Shield, 'Utility': Home, 'Other': Gift
 };
 const SUB_COLORS = {
-  'Streaming': 'text-[#ff00ff] bg-[#ff00ff]/10 border-[#ff00ff]/30',
-  'Fitness': 'text-[#00ffcc] bg-[#00ffcc]/10 border-[#00ffcc]/30',
-  'Software': 'text-[#00E5FF] bg-[#00E5FF]/10 border-[#00E5FF]/30',
-  'Insurance': 'text-[#FF8C00] bg-[#FF8C00]/10 border-[#FF8C00]/30',
-  'Utility': 'text-[#ADFF2F] bg-[#ADFF2F]/10 border-[#ADFF2F]/30',
-  'Other': 'text-gray-400 bg-gray-800/50 border-gray-700',
+  'Streaming': 'text-[#8B0000] bg-[#1a0f0f] border-[#333]',
+  'Fitness': 'text-[#005c00] bg-[#0a1a0a] border-[#333]',
+  'Software': 'text-[#D4AF37] bg-[#1a1a0f] border-[#333]',
+  'Insurance': 'text-[#a38a3d] bg-[#111] border-[#333]',
+  'Utility': 'text-[#555] bg-[#1a1a1a] border-[#333]',
+  'Other': 'text-[#888] bg-[#0d0d0d] border-[#222]',
 };
 
-// Holographic cyber modal background style
-const cyberPanelClass = "backdrop-blur-xl bg-[#050B0D]/80 shadow-[0_0_30px_rgba(0,0,0,0.9),inset_0_0_15px_rgba(0,229,255,0.1)] border border-[#00E5FF]/30";
-const cyberPanelAltClass = "backdrop-blur-md bg-[#0A0F11]/90 border border-[#222] shadow-lg";
+// Horology panel style
+const horologyPanelClass = "bg-sunray shadow-plate plate-border rounded-sm";
+const horologyPanelAltClass = "bg-[#111] border border-[#333] shadow-[var(--shadow-recessed)] rounded-sm";
 
 export default function Planner() {
   const queryClient = useQueryClient();
@@ -64,21 +64,23 @@ export default function Planner() {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20 font-mono">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#333] pb-4">
-        <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00E5FF] to-[#ADFF2F] tracking-widest uppercase">
-          Financial Planner
+    <div className="space-y-6 animate-fade-in pb-20 relative min-h-[90vh]">
+      <div className="fixed inset-0 pointer-events-none bg-cotes-de-geneve animate-cotes-breathe z-[-1]"></div>
+      
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#333] pb-4 relative z-10">
+        <h1 className="text-2xl font-bold text-engraved-gold tracking-[0.2em] uppercase font-sans drop-shadow-sm">
+          Financial Caliber Planner
         </h1>
-        <div className="flex bg-[#050B0D]/80 rounded-xl shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] border border-[#222] p-1 w-full sm:w-auto overflow-x-auto">
+        <div className="flex bg-[#0d0d0d] rounded-sm shadow-[var(--shadow-recessed)] border border-[#333] p-1 w-full sm:w-auto overflow-x-auto">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center px-4 py-2 text-xs font-bold rounded-lg transition-all tracking-widest uppercase whitespace-nowrap",
+                "flex items-center px-4 py-2 text-[10px] font-bold transition-all tracking-[0.2em] uppercase whitespace-nowrap rounded-sm animate-button-compress",
                 activeTab === tab.id 
-                  ? "bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/50 shadow-[inset_0_0_10px_rgba(0,229,255,0.2)]" 
-                  : "text-gray-500 hover:text-[#bbb] border border-transparent hover:bg-white/5"
+                  ? "bg-[#1a1a1a] text-[#D4AF37] border border-[#D4AF37] shadow-plate" 
+                  : "text-[#888] hover:text-[#e0e0e0] border border-transparent hover:bg-[#111]"
               )}
             >
               <tab.icon className="w-3 h-3 mr-2" />
@@ -88,7 +90,7 @@ export default function Planner() {
         </div>
       </div>
 
-      <div className="min-h-[500px]">
+      <div className="min-h-[500px] relative z-10 font-sans">
         {activeTab === 'loans' && <LoansTab loans={loans} isLoading={loadingLoans} onAdd={()=>setLoanModal({mode:'add'})} onEdit={l=>setLoanModal({mode:'edit', data:l})} onDelete={id=>executeMut.mutate({path:`/loans/${id}`, method:'DELETE'})} />}
         {activeTab === 'subs' && <SubsTab subs={subs} isLoading={loadingSubs} onAdd={()=>setSubModal({mode:'add'})} onEdit={s=>setSubModal({mode:'edit', data:s})} onDelete={id=>executeMut.mutate({path:`/subscriptions/${id}`, method:'DELETE'})} />}
         {activeTab === 'tax' && <TaxTab taxRaw={taxRaw} isLoading={loadingTaxes} onAdd={preset=>setTaxModal({mode:'add', data:preset})} onEdit={t=>setTaxModal({mode:'edit', data:t})} onDelete={id=>executeMut.mutate({path:`/taxes/investments/${id}`, method:'DELETE'})} />}
@@ -120,45 +122,47 @@ function LoansTab({ loans, isLoading, onAdd, onEdit, onDelete }) {
    }, 0);
 
    return (
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in w-full">
         {/* STATS HEADER */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-           <div className={`${cyberPanelClass} p-5 rounded-xl border-l-[3px] border-l-[#FF4444] flex flex-col justify-center relative overflow-hidden`}>
-             <div className="absolute inset-0 bg-gradient-to-r from-[#FF4444]/10 to-transparent pointer-events-none"></div>
-             <span className="text-[#888] text-[10px] font-bold uppercase tracking-[0.2em] relative z-10">Total Outstanding</span>
-             <span className="text-xl font-bold text-[#FF4444] mt-1 tracking-wider relative z-10 drop-shadow-[0_0_5px_#FF4444]">₹{formatInr(sumOut)}</span>
+           <div className={`${horologyPanelClass} p-5 border-l-[4px] border-l-[#8B0000] flex flex-col justify-center`}>
+             <span className="text-[#888] text-[9px] font-bold uppercase tracking-[0.2em]">Total Outstanding Liability</span>
+             <span className="text-xl font-mono font-black text-[#8B0000] mt-1 tracking-tight">₹{formatInr(sumOut)}</span>
            </div>
-           <div className={`${cyberPanelAltClass} p-5 rounded-xl flex flex-col justify-center`}>
-             <span className="text-[#888] text-[10px] font-bold uppercase tracking-[0.2em]">Monthly EMI Burden</span>
-             <span className="text-xl font-bold text-[#00E5FF] mt-1 tracking-wider">₹{formatInr(sumEmi)}<span className="text-xs text-[#555] ml-1 uppercase">/mo</span></span>
+           <div className={`${horologyPanelAltClass} bg-sunray plate-border p-5 flex flex-col justify-center`}>
+             <span className="text-[#888] text-[9px] font-bold uppercase tracking-[0.2em]">Monthly Caliber Burden (EMI)</span>
+             <span className="text-xl font-mono font-black text-engraved-gold mt-1 tracking-tight">₹{formatInr(sumEmi)}<span className="text-[10px] font-sans text-[#555] ml-1 uppercase tracking-widest">/mo</span></span>
            </div>
-           <div className={`${cyberPanelAltClass} p-5 rounded-xl hidden sm:flex flex-col justify-center`}>
-             <span className="text-[#888] text-[10px] font-bold uppercase tracking-[0.2em]">Total Principal</span>
-             <span className="text-xl font-bold text-[#ADFF2F] mt-1 tracking-wider drop-shadow-[0_0_3px_rgba(173,255,47,0.5)]">₹{formatInr(sumPrin)}</span>
+           <div className={`${horologyPanelAltClass} bg-sunray plate-border p-5 hidden sm:flex flex-col justify-center`}>
+             <span className="text-[#888] text-[9px] font-bold uppercase tracking-[0.2em]">Total Mechanism Principal</span>
+             <span className="text-xl font-mono font-black text-[#e0e0e0] mt-1 tracking-tight drop-shadow-sm">₹{formatInr(sumPrin)}</span>
            </div>
-           <div className={`${cyberPanelAltClass} p-5 rounded-xl hidden sm:flex flex-col justify-center`}>
-             <span className="text-[#888] text-[10px] font-bold uppercase tracking-[0.2em]">Est. Interest Paid</span>
-             <span className="text-xl font-bold text-[#FF8C00] mt-1 tracking-wider">₹{formatInr(sumPrin * 0.15)}</span>
+           <div className={`${horologyPanelAltClass} bg-sunray plate-border p-5 hidden sm:flex flex-col justify-center`}>
+             <span className="text-[#888] text-[9px] font-bold uppercase tracking-[0.2em]">Est. Interest Bleed</span>
+             <span className="text-xl font-mono font-black text-[#D4AF37] mt-1 tracking-tight">₹{formatInr(sumPrin * 0.15)}</span>
            </div>
         </div>
 
         <div className="flex justify-between items-center px-1 mt-8 mb-4">
-          <h2 className="text-sm font-bold text-[#E0E0E0] tracking-[0.2em] uppercase border-b border-[#333] pb-1">Active Loans Matrix</h2>
-          <button onClick={onAdd} className="flex items-center px-4 py-1.5 text-[10px] border border-[#00E5FF]/50 bg-[#00E5FF]/10 text-[#00E5FF] font-bold uppercase tracking-widest shadow-[inset_0_0_10px_rgba(0,229,255,0.2)] hover:bg-[#00E5FF]/20 hover:border-[#00E5FF] transition-all">
-            <Plus className="w-3 h-3 mr-2" /> Add Loan
+          <h2 className="text-[11px] font-bold text-[#E0E0E0] tracking-[0.3em] uppercase border-b border-[#333] pb-1">Active Financial Cogs</h2>
+          <button onClick={onAdd} className="flex items-center px-4 py-2 text-[10px] border border-[#D4AF37] bg-[#111] text-engraved-gold font-bold uppercase tracking-widest shadow-[var(--shadow-recessed)] hover:bg-[#1a1a1a] transition-all animate-button-compress rounded-sm">
+            <Plus className="w-4 h-4 mr-1" /> Provision Mechanism
           </button>
         </div>
 
         {isLoading ? (
-           <div className="h-64 flex bg-[#050B0D]/50 border border-[#222] rounded-xl items-center justify-center animate-pulse text-[#00E5FF] font-mono tracking-widest">CRUNCHING LEDGERS...</div>
+           <div className={`${horologyPanelAltClass} h-64 flex bg-sunray plate-border items-center justify-center`}>
+              <Settings className="w-8 h-8 text-[#D4AF37] animate-gear-spin mr-3" />
+              <span className="text-[#888] font-bold tracking-[0.2em] text-xs uppercase text-engraved-gold">Syncing Master Ledger...</span>
+           </div>
         ) : loans.length === 0 ? (
-           <div className={`${cyberPanelClass} p-16 rounded-xl text-center flex flex-col items-center`}>
-             <div className="w-20 h-20 bg-[#ADFF2F]/10 border border-[#ADFF2F]/30 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(173,255,47,0.2)]"><Landmark className="w-10 h-10 text-[#ADFF2F]" /></div>
-             <h2 className="text-xl font-bold text-[#ADFF2F] tracking-widest mb-2 uppercase drop-shadow-[0_0_5px_#ADFF2F]">Node is Debt Free</h2>
-             <p className="text-[#888] max-w-sm mb-8 text-xs tracking-wider">Or missing ledger data. Initialize EMI tracking above.</p>
+           <div className={`${horologyPanelClass} p-16 text-center flex flex-col items-center`}>
+             <div className="w-20 h-20 bg-[#0d0d0d] border border-[#333] rounded-sm flex items-center justify-center mb-6 shadow-[var(--shadow-recessed)]"><Landmark className="w-8 h-8 text-[#555]" /></div>
+             <h2 className="text-lg font-bold text-engraved-gold tracking-widest mb-2 uppercase">Caliber Debt Free</h2>
+             <p className="text-[#888] max-w-sm mb-8 text-[11px] font-bold tracking-[0.2em] uppercase">No active loan vectors detected. System running completely unencumbered.</p>
            </div>
         ) : (
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
               {loans.map(loan => (
                  <LoanCard key={loan.id} loan={loan} expanded={expanded[loan.id]} toggle={()=>toggleL(loan.id)} onEdit={()=>onEdit(loan)} onDelete={()=>onDelete(loan.id)}/>
               ))}
@@ -178,67 +182,67 @@ function LoanCard({ loan, expanded, toggle, onEdit, onDelete }) {
    let pct = (repaid / prin) * 100;
    if(isNaN(pct) || pct < 0) pct = 0;
 
-   let pColorClass = 'bg-[#FF4444] shadow-[0_0_10px_#FF4444]';
-   let pTextColor = 'text-[#FF4444]';
-   if(pct > 25) { pColorClass = 'bg-[#FF8C00] shadow-[0_0_10px_#FF8C00]'; pTextColor = 'text-[#FF8C00]'; }
-   if(pct > 60) { pColorClass = 'bg-[#ADFF2F] shadow-[0_0_10px_#ADFF2F]'; pTextColor = 'text-[#ADFF2F]'; }
+   let pColorClass = 'bg-[#8B0000]';
+   let pTextColor = 'text-[#8B0000]';
+   if(pct > 25) { pColorClass = 'bg-[#D4AF37]'; pTextColor = 'text-[#D4AF37]'; }
+   if(pct > 60) { pColorClass = 'bg-[#005c00]'; pTextColor = 'text-[#005c00]'; }
 
    const estMonthsLeft = emi > 0 ? out / emi : 0;
    const pDate = new Date();
    pDate.setMonth(pDate.getMonth() + estMonthsLeft);
 
    return (
-     <div className={`${cyberPanelClass} overflow-hidden group`}>
+     <div className={`${horologyPanelClass} overflow-hidden group`}>
        <div className="p-6 relative">
           
           <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-             <button onClick={onEdit} className="p-1.5 text-[#555] hover:text-[#00E5FF] bg-black/40 border border-transparent hover:border-[#00E5FF]/50 rounded"><Edit2 className="w-3.5 h-3.5"/></button>
-             <button onClick={onDelete} className="p-1.5 text-[#555] hover:text-[#FF4444] bg-black/40 border border-transparent hover:border-[#FF4444]/50 rounded"><Trash2 className="w-3.5 h-3.5"/></button>
+             <button onClick={onEdit} className="p-1.5 text-[#888] hover:text-[#D4AF37] bg-[#111] border border-transparent hover:border-[#333] rounded-sm transition-colors animate-button-compress shadow-[var(--shadow-recessed)]"><Edit2 className="w-4 h-4"/></button>
+             <button onClick={onDelete} className="p-1.5 text-[#888] hover:text-[#8B0000] bg-[#111] border border-transparent hover:border-[#333] rounded-sm transition-colors animate-button-compress shadow-[var(--shadow-recessed)]"><Trash2 className="w-4 h-4"/></button>
           </div>
 
           <div className="flex items-center space-x-3 mb-5">
-             <div className="w-12 h-12 rounded-lg bg-[#00E5FF]/10 border border-[#00E5FF]/30 flex items-center justify-center text-[#00E5FF] shadow-[inset_0_0_10px_rgba(0,229,255,0.2)]">
-                <Icon className="w-6 h-6"/>
+             <div className="w-12 h-12 rounded-sm bg-[#0d0d0d] border border-[#333] flex items-center justify-center text-[#D4AF37] shadow-[var(--shadow-recessed)]">
+                <Icon className="w-5 h-5"/>
              </div>
              <div>
-                <h3 className="font-bold text-[#E0E0E0] tracking-wider uppercase text-sm">{loan.lender_name}</h3>
-                <span className="text-[9px] uppercase font-bold tracking-[0.2em] text-[#00E5FF] bg-[#00E5FF]/10 border border-[#00E5FF]/20 px-2 py-0.5 rounded mt-1 inline-block">NODE ACTIVE</span>
+                <h3 className="font-bold text-engraved-gold tracking-[0.2em] uppercase text-sm">{loan.lender_name}</h3>
+                <span className="text-[8px] uppercase font-bold tracking-[0.2em] text-[#005c00] bg-[#0a1a0a] border border-[#005c00]/50 px-2 py-0.5 rounded-sm mt-1 inline-block">ENGAGED</span>
              </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 bg-black/40 p-4 rounded-xl border border-[#222] mb-6">
+          <div className="grid grid-cols-2 gap-4 bg-[#0d0d0d] p-4 rounded-sm border border-[#333] mb-6 shadow-[var(--shadow-recessed)]">
              <div>
-                <p className="text-[10px] uppercase font-bold text-[#888] tracking-widest mb-1">Outstanding</p>
-                <p className="text-xl font-bold text-[#FF4444] tracking-widest drop-shadow-[0_0_5px_#FF4444]">₹{formatInr(out)}</p>
+                <p className="text-[9px] uppercase font-bold text-[#888] tracking-widest mb-1">Outstanding</p>
+                <p className="text-lg font-mono font-black text-[#8B0000] tracking-tight">₹{formatInr(out)}</p>
              </div>
              <div>
-                <p className="text-[10px] uppercase font-bold text-[#888] tracking-widest mb-1">Original Principal</p>
-                <p className="text-xl font-bold text-[#E0E0E0] tracking-widest">₹{formatInr(prin)}</p>
+                <p className="text-[9px] uppercase font-bold text-[#888] tracking-widest mb-1">Original Principal</p>
+                <p className="text-lg font-mono font-black text-[#e0e0e0] tracking-tight">₹{formatInr(prin)}</p>
              </div>
              <div className="col-span-2 flex justify-between border-t border-[#333] pt-3 mt-1">
-                <div className="flex flex-col"><span className="text-[10px] uppercase font-bold text-[#888] tracking-widest">EMI Amount</span><span className="font-bold text-[#00E5FF]">₹{formatInr(emi)}<span className="text-[9px] text-[#555] ml-1">/MO</span></span></div>
-                <div className="flex flex-col text-right"><span className="text-[10px] uppercase font-bold text-[#888] tracking-widest">Interest Rate</span><span className="font-bold text-[#FF8C00]">{rate}% <span className="text-[9px] text-[#555]">P.A</span></span></div>
+                <div className="flex flex-col"><span className="text-[9px] uppercase font-bold text-[#888] tracking-[0.2em]">EMI Magnitude</span><span className="font-mono font-bold text-engraved-gold">₹{formatInr(emi)}<span className="text-[9px] font-sans text-[#555] ml-1 uppercase">/MO</span></span></div>
+                <div className="flex flex-col text-right"><span className="text-[9px] uppercase font-bold text-[#888] tracking-[0.2em]">Interest Factor</span><span className="font-mono font-bold text-[#a38a3d]">{rate}% <span className="text-[9px] font-sans text-[#555] uppercase">P.A</span></span></div>
              </div>
           </div>
 
           <div>
-             <div className="flex justify-between text-[10px] tracking-widest uppercase font-bold text-[#888] mb-2">
-                <span>₹{formatInr(repaid)} REPAID</span>
-                <span className={pTextColor}>{Math.floor(pct)}% DONE</span>
+             <div className="flex justify-between text-[9px] tracking-[0.2em] uppercase font-bold text-[#888] mb-2">
+                <span>₹{formatInr(repaid)} COMPLETED</span>
+                <span className={pTextColor}>{Math.floor(pct)}% CLEARED</span>
              </div>
-             <div className="w-full bg-[#111] border border-[#333] h-2 rounded-full overflow-hidden">
+             <div className="w-full bg-[#111] border border-[#333] h-1.5 rounded-sm overflow-hidden shadow-[var(--shadow-recessed)]">
                 <div className={cn("h-full transition-all", pColorClass)} style={{width: `${pct}%`}}></div>
              </div>
           </div>
        </div>
 
-       <div className="border-t border-[#222] bg-[#0A0F11]/60 p-4 flex justify-between items-center">
+       <div className="border-t border-[#333] bg-[#050505] p-4 flex justify-between items-center">
           <div className="flex flex-col">
-             <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#555]">Est. Payoff</span>
-             <span className="text-[11px] uppercase tracking-widest font-bold text-[#ADFF2F]">{pDate.toLocaleString('default',{month:'short', year:'numeric'})}</span>
+             <span className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#555]">Est. Release Date</span>
+             <span className="text-[10px] uppercase tracking-widest font-bold text-engraved-gold">{pDate.toLocaleString('default',{month:'short', year:'numeric'})}</span>
           </div>
-          <button onClick={toggle} className="text-[9px] uppercase tracking-widest font-bold text-[#00E5FF] bg-black/40 hover:bg-[#00E5FF]/10 px-3 py-1.5 rounded border border-[#00E5FF]/30 flex items-center transition">
-             {expanded ? 'HIDE AMORTIZATION' : 'AMORTIZATION TABLE'} {expanded ? <ChevronUp className="w-3 h-3 ml-1"/> : <ChevronDown className="w-3 h-3 ml-1"/>}
+          <button onClick={toggle} className="text-[9px] uppercase tracking-[0.2em] font-bold text-[#888] hover:text-[#D4AF37] bg-[#111] hover:border-[#D4AF37] px-3 py-1.5 rounded-sm border border-[#333] shadow-[var(--shadow-recessed)] flex items-center transition animate-button-compress">
+             {expanded ? 'CONCEAL LEDGER' : 'REVEAL LEDGER'} {expanded ? <ChevronUp className="w-3 h-3 ml-1"/> : <ChevronDown className="w-3 h-3 ml-1"/>}
           </button>
        </div>
 
@@ -266,12 +270,12 @@ function AmortizationViewer({ loan }) {
    }
 
    return (
-      <div className="border-t border-[#00E5FF]/30 bg-black/50 p-4 relative overflow-hidden animate-fade-in">
-         <div className="bg-[#00E5FF]/5 border border-[#00E5FF]/20 p-3 rounded mb-4 flex items-center justify-between">
-            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#00E5FF]">Simulator (Extra +₹):</span>
-            <input type="number" value={extra} onChange={e=>setExtra(e.target.value)} placeholder="0" className="w-24 text-right ml-2 px-2 py-1 text-xs font-bold font-mono bg-black/60 border border-[#00E5FF]/40 text-[#00E5FF] rounded outline-none focus:border-[#00E5FF]" />
+      <div className="border-t border-[#333] bg-[#0d0d0d] p-4 relative overflow-hidden animate-fade-in shadow-[var(--shadow-recessed)]">
+         <div className="bg-[#111] border border-[#333] p-3 rounded-sm mb-4 flex items-center justify-between shadow-[var(--shadow-recessed)]">
+            <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-[#888]">Calibrator (Extra +₹):</span>
+            <input type="number" value={extra} onChange={e=>setExtra(e.target.value)} placeholder="0" className="w-24 text-right ml-2 px-2 py-1 text-xs font-bold font-mono bg-[#050505] border border-[#333] text-engraved-gold rounded-sm outline-none focus:border-[#D4AF37] shadow-[var(--shadow-recessed)]" />
          </div>
-         <table className="w-full text-left text-[10px] tracking-widest uppercase">
+         <table className="w-full text-left text-[9px] tracking-[0.2em] uppercase">
             <thead>
                <tr className="text-[#555] border-b border-[#333]">
                   <th className="pb-2">Mo</th>
@@ -283,10 +287,10 @@ function AmortizationViewer({ loan }) {
             <tbody>
                {rows.map(r => (
                   <tr key={r.m} className="border-b border-[#222] text-[#888] font-mono">
-                     <td className="py-2 text-[#E0E0E0]">{r.m}</td>
-                     <td className="py-2 text-[#ADFF2F]">₹{formatInr(r.pComp)}</td>
-                     <td className="py-2 text-[#FF4444]">₹{formatInr(r.iComp)}</td>
-                     <td className="py-2 text-right font-bold text-[#E0E0E0]">₹{formatInr(r.cb)}</td>
+                     <td className="py-2 text-[#e0e0e0]">{r.m}</td>
+                     <td className="py-2 text-[#005c00]">₹{formatInr(r.pComp)}</td>
+                     <td className="py-2 text-[#8B0000]">₹{formatInr(r.iComp)}</td>
+                     <td className="py-2 text-right font-bold text-engraved-gold">₹{formatInr(r.cb)}</td>
                   </tr>
                ))}
             </tbody>
@@ -307,38 +311,38 @@ function LoanEditorModal({ initial, onClose, onSave }) {
    };
    
    return (
-     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in font-mono">
-       <div className={`${cyberPanelClass} rounded-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]`}>
-          <div className="p-4 border-b border-[#00E5FF]/30 bg-[#00E5FF]/5">
-             <h3 className="text-sm tracking-[0.3em] font-bold text-[#00E5FF] uppercase">{initial?'Update Protocol':'Provision Loan'}</h3>
+     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in font-sans">
+       <div className={`${horologyPanelClass} w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]`}>
+          <div className="p-4 border-b border-[#333] bg-[#0d0d0d]">
+             <h3 className="text-[11px] tracking-[0.3em] font-bold text-engraved-gold uppercase">{initial?'Adjust Caliber Settings':'Instantiate Ledger'}</h3>
           </div>
-          <div className="p-6 overflow-y-auto space-y-5 bg-black/40">
+          <div className="p-6 overflow-y-auto space-y-5 bg-sunray plate-border">
              <div>
-                <label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Lender Entity</label>
-                <input required value={fd.lender_name} onChange={e=>setFd({...fd, lender_name:e.target.value})} className="w-full bg-black/50 border border-[#333] text-[#E0E0E0] rounded p-2 focus:border-[#00E5FF] focus:outline-none" />
+                <label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Lender Entity</label>
+                <input required value={fd.lender_name} onChange={e=>setFd({...fd, lender_name:e.target.value})} className="w-full bg-[#111] border border-[#333] text-[#e0e0e0] font-mono text-sm rounded-sm p-2 focus:border-[#D4AF37] focus:outline-none shadow-[var(--shadow-recessed)]" />
              </div>
              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Principal [₹]</label>
-                  <input type="number" required value={fd.principal} onChange={e=>setFd({...fd, principal:e.target.value})} onBlur={calcEmi} className="w-full bg-black/50 border border-[#333] text-[#E0E0E0] rounded p-2 focus:border-[#00E5FF] focus:outline-none" />
+                  <label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Principal [₹]</label>
+                  <input type="number" required value={fd.principal} onChange={e=>setFd({...fd, principal:e.target.value})} onBlur={calcEmi} className="w-full bg-[#111] border border-[#333] text-[#e0e0e0] font-mono text-sm rounded-sm p-2 focus:border-[#D4AF37] focus:outline-none shadow-[var(--shadow-recessed)]" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Outstanding [₹]</label>
-                  <input type="number" value={fd.outstanding} onChange={e=>setFd({...fd, outstanding:e.target.value})} className="w-full bg-black/50 border border-[#333] text-[#FF4444] rounded p-2 focus:border-[#FF4444] focus:outline-none" />
+                  <label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Outstanding [₹]</label>
+                  <input type="number" value={fd.outstanding} onChange={e=>setFd({...fd, outstanding:e.target.value})} className="w-full bg-[#1a0a0a] border border-[#8B0000]/50 text-[#8B0000] font-mono text-sm rounded-sm p-2 focus:border-[#8B0000] focus:outline-none shadow-[var(--shadow-recessed)]" />
                 </div>
              </div>
              <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Rate [% p.a]</label><input type="number" step="0.1" required value={fd.interest_rate} onChange={e=>setFd({...fd, interest_rate:e.target.value})} onBlur={calcEmi} className="w-full bg-black/50 border border-[#333] text-[#FF8C00] rounded p-2 focus:border-[#FF8C00] focus:outline-none" /></div>
-                <div><label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Term [Mo]</label><input type="number" required value={fd.tenure_months} onChange={e=>setFd({...fd, tenure_months:e.target.value})} onBlur={calcEmi} className="w-full bg-black/50 border border-[#333] text-[#E0E0E0] rounded p-2 focus:border-[#00E5FF] focus:outline-none" /></div>
+                <div><label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Rate [% p.a]</label><input type="number" step="0.1" required value={fd.interest_rate} onChange={e=>setFd({...fd, interest_rate:e.target.value})} onBlur={calcEmi} className="w-full bg-[#111] border border-[#333] text-[#a38a3d] font-mono text-sm rounded-sm p-2 focus:border-[#a38a3d] focus:outline-none shadow-[var(--shadow-recessed)]" /></div>
+                <div><label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Term [Mo]</label><input type="number" required value={fd.tenure_months} onChange={e=>setFd({...fd, tenure_months:e.target.value})} onBlur={calcEmi} className="w-full bg-[#111] border border-[#333] text-[#e0e0e0] font-mono text-sm rounded-sm p-2 focus:border-[#D4AF37] focus:outline-none shadow-[var(--shadow-recessed)]" /></div>
              </div>
              <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Calculated EMI</label><input type="number" required value={fd.emi_amount} onChange={e=>setFd({...fd, emi_amount:e.target.value})} className="w-full bg-[#00E5FF]/10 border border-[#00E5FF]/40 text-[#00E5FF] rounded p-2 focus:border-[#00E5FF] shadow-[inset_0_0_10px_rgba(0,229,255,0.1)] focus:outline-none" /></div>
-                <div><label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Initiation Date</label><input type="date" required value={fd.start_date.split('T')[0]} onChange={e=>setFd({...fd, start_date:e.target.value})} className="w-full bg-black/50 border border-[#333] text-[#E0E0E0] rounded p-2 focus:border-[#00E5FF] focus:outline-none [color-scheme:dark]" /></div>
+                <div><label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Calculated EMI</label><input type="number" required value={fd.emi_amount} onChange={e=>setFd({...fd, emi_amount:e.target.value})} className="w-full bg-[#1a1a0f] border border-[#D4AF37]/50 text-engraved-gold font-mono text-sm rounded-sm p-2 focus:border-[#D4AF37] shadow-[var(--shadow-recessed)] focus:outline-none" /></div>
+                <div><label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Initiation Date</label><input type="date" required value={fd.start_date.split('T')[0]} onChange={e=>setFd({...fd, start_date:e.target.value})} className="w-full bg-[#111] border border-[#333] text-[#e0e0e0] font-mono text-sm rounded-sm p-2 focus:border-[#D4AF37] focus:outline-none shadow-[var(--shadow-recessed)] [color-scheme:dark]" /></div>
              </div>
           </div>
-          <div className="p-4 border-t border-[#00E5FF]/30 bg-[#00E5FF]/5 flex gap-3">
-             <button onClick={onClose} className="flex-1 py-2 bg-transparent border border-[#555] text-[#888] hover:text-[#E0E0E0] text-[10px] uppercase font-bold tracking-[0.2em] rounded">Abort</button>
-             <button onClick={()=>onSave(fd)} className="flex-1 py-2 bg-[#00E5FF]/20 border border-[#00E5FF]/50 text-[#00E5FF] text-[10px] uppercase font-bold tracking-[0.2em] hover:bg-[#00E5FF]/40 shadow-[0_0_10px_rgba(0,229,255,0.2)] rounded transition-all">Execute</button>
+          <div className="p-4 border-t border-[#333] bg-[#050505] flex gap-3">
+             <button onClick={onClose} className="flex-1 py-2.5 bg-[#111] border border-[#333] text-[#888] hover:text-[#e0e0e0] text-[9px] uppercase font-bold tracking-[0.2em] rounded-sm shadow-[var(--shadow-recessed)] animate-button-compress">Abort</button>
+             <button onClick={()=>onSave(fd)} className="flex-1 py-2.5 bg-[#D4AF37] border border-[#D4AF37] text-black text-[9px] uppercase font-bold tracking-[0.2em] shadow-plate hover:bg-[#b0912c] rounded-sm transition-all animate-button-compress">Execute Bind</button>
           </div>
        </div>
      </div>
@@ -366,44 +370,44 @@ function SubsTab({ subs, isLoading, onAdd, onEdit, onDelete }) {
    const mostEx = [...subs].sort((a,b)=>Number(b.amount)-Number(a.amount))[0] || null;
 
    return (
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in w-full">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-           <div className={`${cyberPanelAltClass} p-5 rounded-xl flex flex-col justify-center`}>
-             <span className="text-[#888] text-[10px] font-bold uppercase tracking-[0.2em]">Monthly Burn</span>
-             <span className="text-xl font-bold text-[#E0E0E0] mt-1 tracking-wider">₹{formatInr(moTotal)}<span className="text-xs text-[#555] ml-1 uppercase">/mo</span></span>
+           <div className={`${horologyPanelAltClass} bg-sunray plate-border p-5 flex flex-col justify-center`}>
+             <span className="text-[#888] text-[9px] font-bold uppercase tracking-[0.2em]">Monthly Mechanism Burn</span>
+             <span className="text-xl font-mono font-black text-[#e0e0e0] mt-1 tracking-tight">₹{formatInr(moTotal)}<span className="text-xs font-sans text-[#555] ml-1 uppercase">/mo</span></span>
            </div>
-           <div className={`${cyberPanelAltClass} p-5 rounded-xl flex flex-col justify-center`}>
-             <span className="text-[#888] text-[10px] font-bold uppercase tracking-[0.2em]">Yearly Output</span>
-             <span className="text-xl font-bold text-[#ADFF2F] mt-1 tracking-wider">₹{formatInr(yrTotal)}</span>
+           <div className={`${horologyPanelAltClass} bg-sunray plate-border p-5 flex flex-col justify-center`}>
+             <span className="text-[#888] text-[9px] font-bold uppercase tracking-[0.2em]">Annual Cyclic Cost</span>
+             <span className="text-xl font-mono font-black text-[#D4AF37] mt-1 tracking-tight">₹{formatInr(yrTotal)}</span>
            </div>
-           <div className={cn("p-5 rounded-xl flex flex-col justify-center transition-colors border shadow-lg backdrop-blur-md", due7>0 ? "bg-[#FF8C00]/10 border-[#FF8C00]/50" : "bg-[#0A0F11]/90 border-[#222]")}>
-             <span className="text-[#888] text-[10px] font-bold uppercase tracking-[0.2em]">Next 7 Days</span>
-             <span className="text-xl font-bold text-[#FF8C00] mt-1 drop-shadow-[0_0_5px_rgba(255,140,0,0.5)]">{due7} <span className="text-[10px] tracking-widest text-[#FF8C00]">QUEUED [₹{formatInr(due7Amnt)}]</span></span>
+           <div className={cn("p-5 rounded-sm flex flex-col justify-center transition-colors border plate-border shadow-plate", due7>0 ? "bg-[#1a1a0f] border-[#a38a3d]" : "bg-sunray border-[#333]")}>
+             <span className="text-[#888] text-[9px] font-bold uppercase tracking-[0.2em]">Upcoming 7 Rotations</span>
+             <span className="text-xl font-mono font-black text-[#a38a3d] mt-1 drop-shadow-sm">{due7} <span className="text-[9px] tracking-widest text-[#a38a3d] font-sans">QUEUED [₹{formatInr(due7Amnt)}]</span></span>
            </div>
-           <div className={`${cyberPanelAltClass} p-5 rounded-xl hidden sm:flex flex-col justify-center`}>
-             <span className="text-[#888] text-[10px] font-bold uppercase tracking-[0.2em]">High Impact</span>
-             <span className="text-[14px] font-bold text-[#ff00ff] mt-1 leading-tight tracking-widest uppercase">{mostEx ? mostEx.name : '--'}</span>
-             <span className="text-xs font-bold text-[#888] mt-1">₹{formatInr(mostEx?.amount||0)}</span>
+           <div className={`${horologyPanelAltClass} bg-sunray plate-border p-5 hidden sm:flex flex-col justify-center`}>
+             <span className="text-[#888] text-[9px] font-bold uppercase tracking-[0.2em]">Heaviest Vector</span>
+             <span className="text-[13px] font-bold text-[#D4AF37] mt-1 leading-tight tracking-[0.2em] uppercase truncate">{mostEx ? mostEx.name : '--'}</span>
+             <span className="text-[10px] font-bold font-mono text-[#888] mt-1">₹{formatInr(mostEx?.amount||0)}</span>
            </div>
         </div>
 
         <div className="flex justify-between items-center px-1 mt-8 mb-4">
-          <h2 className="text-sm font-bold text-[#E0E0E0] tracking-[0.2em] uppercase border-b border-[#333] pb-1">Subscription Nodes</h2>
-          <button onClick={onAdd} className="flex items-center px-4 py-1.5 text-[10px] border border-[#ff00ff]/50 bg-[#ff00ff]/10 text-[#ff00ff] font-bold uppercase tracking-widest shadow-[inset_0_0_10px_rgba(255,0,255,0.2)] hover:bg-[#ff00ff]/20 transition-all">
-            <Plus className="w-3 h-3 mr-2" /> Add Node
+          <h2 className="text-[11px] font-bold text-[#e0e0e0] tracking-[0.3em] uppercase border-b border-[#333] pb-1">Automated Nodes</h2>
+          <button onClick={onAdd} className="flex items-center px-4 py-2 text-[10px] border border-[#D4AF37] bg-[#111] text-engraved-gold font-bold uppercase tracking-widest shadow-[var(--shadow-recessed)] hover:bg-[#1a1a1a] transition-all animate-button-compress rounded-sm">
+            <Plus className="w-4 h-4 mr-1" /> Provision Node
           </button>
         </div>
 
         {subs.length === 0 && !isLoading && (
-           <div className={`${cyberPanelClass} p-12 rounded-xl text-center flex flex-col items-center`}>
-             <Monitor className="w-12 h-12 text-[#555] mb-4 opacity-50" />
-             <h2 className="text-sm font-bold text-[#888] tracking-widest uppercase mb-1">No Active Data-Links</h2>
-             <button onClick={onAdd} className="mt-4 px-4 py-2 border border-[#ff00ff]/50 text-[#ff00ff] text-[10px] tracking-[0.2em] uppercase hover:bg-[#ff00ff]/10 transition">+ Initialize Sync</button>
+           <div className={`${horologyPanelClass} p-12 text-center flex flex-col items-center`}>
+             <div className="w-16 h-16 bg-[#0d0d0d] border border-[#333] rounded-sm flex items-center justify-center mb-6 shadow-[var(--shadow-recessed)]"><Monitor className="w-6 h-6 text-[#555]" /></div>
+             <h2 className="text-sm font-bold text-[#888] tracking-[0.2em] uppercase mb-1">No Active Synchronizations</h2>
+             <button onClick={onAdd} className="mt-4 px-6 py-2 bg-[#D4AF37] text-black font-bold text-[9px] tracking-[0.2em] uppercase shadow-plate rounded-sm hover:bg-[#b0912c] transition animate-button-compress">+ Initialize Sync</button>
            </div>
         )}
 
         {subs.length > 0 && (
-           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
               <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                  {subs.map(sub => {
                     const d = new Date(sub.next_due);
@@ -413,54 +417,54 @@ function SubsTab({ subs, isLoading, onAdd, onEdit, onDelete }) {
                     const ccClass = SUB_COLORS[sub.category] || SUB_COLORS['Other'];
                     
                     return (
-                       <div key={sub.id} className={cn("p-5 rounded-xl border relative transition backdrop-blur-md shadow-lg", isOver ? "bg-[#FF4444]/10 border-[#FF4444]/40" : isAlert ? "bg-[#FF8C00]/10 border-[#FF8C00]/40" : "bg-[#0A0F11]/80 border-[#333] hover:border-[#555]")}>
+                       <div key={sub.id} className={cn("p-5 rounded-sm border relative transition shadow-plate plate-border", isOver ? "bg-[#1a0a0a] border-[#8B0000]/50" : isAlert ? "bg-[#1a1a0f] border-[#a38a3d]/50" : "bg-sunray border-[#333] hover:border-[#555]")}>
                           <div className="absolute top-4 right-4 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={()=>onEdit(sub)} className="p-1 rounded bg-black/40 text-[#555] hover:text-[#00E5FF]"><Edit2 className="w-3 h-3"/></button>
-                            <button onClick={()=>onDelete(sub.id)} className="p-1 rounded bg-black/40 text-[#555] hover:text-[#FF4444]"><Trash2 className="w-3 h-3"/></button>
+                            <button onClick={()=>onEdit(sub)} className="p-1 rounded-sm bg-[#111] border border-[#333] text-[#888] hover:text-[#D4AF37] shadow-[var(--shadow-recessed)] animate-button-compress"><Edit2 className="w-3 h-3"/></button>
+                            <button onClick={()=>onDelete(sub.id)} className="p-1 rounded-sm bg-[#111] border border-[#333] text-[#888] hover:text-[#8B0000] shadow-[var(--shadow-recessed)] animate-button-compress"><Trash2 className="w-3 h-3"/></button>
                           </div>
                           <div className="flex items-center space-x-3 mb-4 pr-10">
-                             <div className={cn("w-10 h-10 flex items-center justify-center font-bold text-lg rounded border", ccClass)}>{sub.name.charAt(0)}</div>
+                             <div className={cn("w-10 h-10 flex items-center justify-center font-bold text-lg rounded-sm border shadow-[var(--shadow-recessed)]", ccClass)}>{sub.name.charAt(0)}</div>
                              <div>
-                                <h4 className="font-bold text-[#E0E0E0] tracking-wider uppercase text-sm">{sub.name}</h4>
-                                <span className={cn("text-[8px] uppercase font-bold tracking-[0.2em] px-1.5 py-0.5 rounded inline-block mt-1", ccClass)}>{sub.category}</span>
+                                <h4 className="font-bold text-engraved-gold tracking-widest uppercase text-xs">{sub.name}</h4>
+                                <span className={cn("text-[8px] uppercase font-bold tracking-[0.2em] px-1.5 py-0.5 rounded-sm inline-block mt-1 shadow-plate border", ccClass)}>{sub.category}</span>
                              </div>
                           </div>
                           <div className="flex justify-between items-end border-t border-[#333] pt-3">
                              <div className="flex flex-col">
-                                <span className="text-xl font-bold tracking-widest text-[#00E5FF]">₹{formatInr(sub.amount)}</span>
-                                <span className="text-[9px] uppercase font-bold text-[#555] tracking-widest">{sub.frequency}</span>
+                                <span className="text-xl font-mono font-black tracking-tight text-[#e0e0e0]">₹{formatInr(sub.amount)}</span>
+                                <span className="text-[9px] uppercase font-bold text-[#888] tracking-widest">{sub.frequency}</span>
                              </div>
                              <div className="flex flex-col text-right">
-                                <span className="text-[9px] font-bold text-[#888] tracking-[0.2em] uppercase">Next Cycle</span>
-                                <span className={cn("text-xs tracking-widest font-bold uppercase", isOver ? "text-[#FF4444] drop-shadow-[0_0_5px_#FF4444]" : isAlert ? "text-[#FF8C00] drop-shadow-[0_0_5px_#FF8C00]" : "text-[#E0E0E0]")}>
+                                <span className="text-[8px] font-bold text-[#888] tracking-[0.2em] uppercase">Next Cycle</span>
+                                <span className={cn("text-[11px] tracking-widest font-bold uppercase", isOver ? "text-[#8B0000]" : isAlert ? "text-[#a38a3d]" : "text-[#D4AF37]")}>
                                    {d.toLocaleDateString('en-IN', {month:'short', day:'numeric'})}
                                 </span>
                              </div>
                           </div>
-                          {isAlert && <div className="absolute -top-3 left-4 bg-[#FF8C00]/20 text-[#FF8C00] text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border border-[#FF8C00]/50 backdrop-blur-md rounded shadow-[0_0_10px_rgba(255,140,0,0.3)]">DUE_IN_{diff}D</div>}
-                          {isOver && <div className="absolute -top-3 left-4 bg-[#FF4444]/20 text-[#FF4444] text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border border-[#FF4444]/50 backdrop-blur-md rounded shadow-[0_0_10px_rgba(255,68,68,0.3)]">FAULT_OVERDUE</div>}
+                          {isAlert && <div className="absolute -top-2 left-4 bg-[#1a1a0f] text-[#a38a3d] text-[8px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 border border-[#a38a3d]/50 rounded-sm shadow-plate">DUE_IN_{diff}D</div>}
+                          {isOver && <div className="absolute -top-2 left-4 bg-[#1a0a0a] text-[#8B0000] text-[8px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 border border-[#8B0000]/50 rounded-sm shadow-plate">FAULT_OVERDUE</div>}
                        </div>
                     )
                  })}
               </div>
 
               {/* CALENDAR COLUMN */}
-              <div className={`${cyberPanelClass} rounded-xl p-5 h-fit lg:sticky lg:top-6`}>
-                 <h3 className="text-xs font-bold text-[#E0E0E0] uppercase tracking-[0.2em] border-b border-[#333] pb-3 mb-4 flex items-center"><Calendar className="w-3 h-3 mr-2 text-[#00E5FF]"/> Sync Outlook [30D]</h3>
+              <div className={`${horologyPanelClass} p-5 h-fit lg:sticky lg:top-6`}>
+                 <h3 className="text-[10px] font-bold text-[#e0e0e0] uppercase tracking-[0.2em] border-b border-[#333] pb-3 mb-4 flex items-center"><Calendar className="w-4 h-4 mr-2 text-[#D4AF37]"/> Rotation Outlook [30D]</h3>
                  <div className="space-y-4">
                     {sorted.slice(0, 10).map((s, i) => {
                        const d = new Date(s.next_due);
                        const isOver = Math.ceil((d - today)/(86400000)) < 0;
                        return (
-                          <div key={i} className="flex items-center justify-between group py-1 border-b border-[#222]">
+                          <div key={i} className="flex items-center justify-between group py-2 border-b border-[#333]">
                              <div className="flex items-center space-x-3">
-                                <div className={cn("w-10 text-center font-bold text-[9px] tracking-widest uppercase", isOver ? "text-[#FF4444]" : "text-[#555]")}>
-                                   {d.toLocaleDateString('en-IN', {month:'short'})}<br/><span className={cn("text-lg leading-none font-bold", isOver ? "text-[#FF4444]" : "text-[#E0E0E0] group-hover:text-[#00E5FF]")}>{d.getDate()}</span>
+                                <div className={cn("w-10 text-center font-bold text-[8px] tracking-[0.2em] uppercase", isOver ? "text-[#8B0000]" : "text-[#888]")}>
+                                   {d.toLocaleDateString('en-IN', {month:'short'})}<br/><span className={cn("text-lg font-mono leading-none font-black", isOver ? "text-[#8B0000]" : "text-[#e0e0e0] group-hover:text-[#D4AF37]")}>{d.getDate()}</span>
                                 </div>
                                 <div className="h-6 w-px bg-[#333]"></div>
-                                <span className="text-xs font-bold text-[#E0E0E0] tracking-wider uppercase">{s.name}</span>
+                                <span className="text-[10px] font-bold text-engraved-gold tracking-widest uppercase">{s.name}</span>
                              </div>
-                             <span className="font-bold text-[#00E5FF] tracking-widest text-xs">₹{formatInr(s.amount)}</span>
+                             <span className="font-mono font-black text-[#888] tracking-widest text-xs">₹{formatInr(s.amount)}</span>
                           </div>
                        )
                     })}
@@ -475,26 +479,26 @@ function SubsTab({ subs, isLoading, onAdd, onEdit, onDelete }) {
 function SubEditorModal({ initial, onClose, onSave }) {
   const [fd, setFd] = useState(initial || { name:'', amount:'', frequency:'monthly', category:'Streaming', next_due:new Date().toISOString().split('T')[0] });
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in font-mono">
-       <div className={`${cyberPanelClass} rounded-xl w-full max-w-sm overflow-hidden flex flex-col`}>
-          <div className="p-4 border-b border-[#00E5FF]/30 bg-[#00E5FF]/5"><h3 className="text-sm tracking-[0.3em] font-bold text-[#00E5FF] uppercase">{initial?'Modify Sub Node':'Instantiate Node'}</h3></div>
-          <div className="p-6 space-y-4 bg-black/40">
-             <div><label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Service ID</label><input required value={fd.name} onChange={e=>setFd({...fd, name:e.target.value})} className="w-full bg-black/50 border border-[#333] text-[#E0E0E0] rounded p-2 focus:border-[#00E5FF] focus:outline-none" /></div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in font-sans">
+       <div className={`${horologyPanelClass} w-full max-w-sm overflow-hidden flex flex-col`}>
+          <div className="p-4 border-b border-[#333] bg-[#0d0d0d]"><h3 className="text-[10px] tracking-[0.3em] font-bold text-engraved-gold uppercase">{initial?'Modify Sub Node':'Configure Node'}</h3></div>
+          <div className="p-6 space-y-4 bg-sunray plate-border">
+             <div><label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Service ID</label><input required value={fd.name} onChange={e=>setFd({...fd, name:e.target.value})} className="w-full bg-[#111] border border-[#333] text-[#e0e0e0] font-mono text-sm rounded-sm p-2 focus:border-[#D4AF37] outline-none shadow-[var(--shadow-recessed)]" /></div>
              <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Debit [₹]</label><input type="number" required value={fd.amount} onChange={e=>setFd({...fd, amount:e.target.value})} className="w-full bg-black/50 border border-[#333] text-[#FF4444] rounded p-2 focus:border-[#FF4444] focus:outline-none" /></div>
-                <div><label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Cycle</label><select value={fd.frequency} onChange={e=>setFd({...fd, frequency:e.target.value})} className="w-full bg-black/50 border border-[#333] text-[#E0E0E0] rounded p-2 focus:border-[#00E5FF] focus:outline-none"><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option></select></div>
+                <div><label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Debit [₹]</label><input type="number" required value={fd.amount} onChange={e=>setFd({...fd, amount:e.target.value})} className="w-full bg-[#111] border border-[#333] text-engraved-gold font-mono text-sm rounded-sm p-2 focus:border-[#D4AF37] outline-none shadow-[var(--shadow-recessed)]" /></div>
+                <div><label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Cycle</label><select value={fd.frequency} onChange={e=>setFd({...fd, frequency:e.target.value})} className="w-full bg-[#111] border border-[#333] text-[#e0e0e0] font-mono text-xs uppercase tracking-widest rounded-sm p-2 focus:border-[#D4AF37] outline-none shadow-[var(--shadow-recessed)]"><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option></select></div>
              </div>
              <div>
-               <label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Class</label>
-               <select value={fd.category} onChange={e=>setFd({...fd, category:e.target.value})} className="w-full bg-black/50 border border-[#333] text-[#E0E0E0] rounded p-2 focus:border-[#00E5FF] focus:outline-none">
+               <label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Class</label>
+               <select value={fd.category} onChange={e=>setFd({...fd, category:e.target.value})} className="w-full bg-[#111] border border-[#333] text-[#e0e0e0] font-mono text-xs uppercase tracking-widest rounded-sm p-2 focus:border-[#D4AF37] outline-none shadow-[var(--shadow-recessed)]">
                  {Object.keys(SUB_CATS).map(c=><option key={c} value={c} className="bg-[#111]">{c}</option>)}
                </select>
              </div>
-             <div><label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Next Execution</label><input type="date" required value={fd.next_due.split('T')[0]} onChange={e=>setFd({...fd, next_due:e.target.value})} className="w-full bg-black/50 border border-[#333] text-[#E0E0E0] rounded p-2 focus:border-[#00E5FF] focus:outline-none [color-scheme:dark]" /></div>
+             <div><label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Next Execution</label><input type="date" required value={fd.next_due.split('T')[0]} onChange={e=>setFd({...fd, next_due:e.target.value})} className="w-full bg-[#111] border border-[#333] text-[#e0e0e0] font-mono text-xs rounded-sm p-2 focus:border-[#D4AF37] outline-none shadow-[var(--shadow-recessed)] [color-scheme:dark]" /></div>
           </div>
-          <div className="p-4 border-t border-[#00E5FF]/30 bg-[#00E5FF]/5 flex gap-3">
-             <button onClick={onClose} className="flex-1 py-2 bg-transparent border border-[#555] text-[#888] text-[10px] uppercase font-bold tracking-[0.2em] rounded">Abort</button>
-             <button onClick={()=>onSave(fd)} className="flex-1 py-2 bg-[#ff00ff]/20 border border-[#ff00ff]/50 text-[#ff00ff] text-[10px] uppercase font-bold tracking-[0.2em] hover:bg-[#ff00ff]/40 shadow-[0_0_10px_rgba(255,0,255,0.2)] rounded transition-all">Compile</button>
+          <div className="p-4 border-t border-[#333] bg-[#050505] flex gap-3">
+             <button onClick={onClose} className="flex-1 py-2.5 bg-[#111] border border-[#333] text-[#888] text-[9px] uppercase font-bold tracking-[0.2em] rounded-sm shadow-[var(--shadow-recessed)] animate-button-compress hover:text-[#e0e0e0]">Abort</button>
+             <button onClick={()=>onSave(fd)} className="flex-1 py-2.5 bg-[#D4AF37] border border-[#D4AF37] text-black text-[9px] uppercase font-bold tracking-[0.2em] shadow-plate rounded-sm transition-all animate-button-compress hover:bg-[#b0912c]">Compile</button>
           </div>
        </div>
     </div>
@@ -507,7 +511,7 @@ function SubEditorModal({ initial, onClose, onSave }) {
 function TaxTab({ taxRaw, isLoading, onAdd, onEdit, onDelete }) {
    const [slab, setSlab] = useState(30);
    
-   if(isLoading) return <div className="h-64 flex bg-[#050B0D]/50 border border-[#222] rounded-xl items-center justify-center animate-pulse text-[#ADFF2F] font-mono tracking-[0.2em]">VALIDATING SCHEMAS...</div>;
+   if(isLoading) return <div className="h-64 flex bg-[#0d0d0d] border plate-border rounded-sm items-center justify-center animate-pulse text-[#D4AF37] font-mono tracking-[0.2em] shadow-[var(--shadow-recessed)]">CALIBRATING SCHEMAS...</div>;
 
    const data = taxRaw?.investments || [];
    const sumData = taxRaw?.summary || { total_invested:0, progress_percentage:0, remaining_80c:150000, total_80c_limit:150000 };
@@ -521,58 +525,58 @@ function TaxTab({ taxRaw, isLoading, onAdd, onEdit, onDelete }) {
    const potSave = sumData.remaining_80c * (slab/100);
 
    return (
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in w-full">
          {/* HEADER SUMMARY */}
-         <div className="p-8 backdrop-blur-xl bg-black/60 shadow-[0_0_50px_rgba(0,0,0,0.9),inset_0_0_20px_rgba(173,255,47,0.1)] border border-[#ADFF2F]/30 rounded-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#ADFF2F]/10 blur-[80px] pointer-events-none"></div>
-            <Landmark className="absolute right-[-10px] top-1/2 -translate-y-1/2 w-48 h-48 opacity-5 text-[#ADFF2F] stroke-1" />
+         <div className="p-8 bg-[#0a0a0a] border-[#333] border rounded-sm relative overflow-hidden shadow-plate">
+            <div className="absolute inset-0 pattern-cotes opacity-40"></div>
+            <Landmark className="absolute right-0 top-1/2 -translate-y-1/2 w-48 h-48 opacity-5 text-[#D4AF37] stroke-1" />
             
-            <div className="flex justify-between items-start mb-6 border-b border-[#ADFF2F]/20 pb-4 relative z-10">
+            <div className="flex justify-between items-start mb-6 border-b border-[#333] pb-4 relative z-10">
                <div>
-                  <h2 className="text-xl font-bold tracking-[0.2em] text-[#E0E0E0] uppercase"><span className="text-[#ADFF2F]">FY {sumData.financial_year}</span> · 80C LIMIT</h2>
-                  <p className="text-[#888] text-xs tracking-widest mt-1">DEDUCTION MAXIMIZATION PROTOCOL</p>
+                  <h2 className="text-xl font-bold tracking-[0.2em] text-[#e0e0e0] uppercase"><span className="text-[#D4AF37]">FY {sumData.financial_year}</span> · 80C LIMIT</h2>
+                  <p className="text-[#888] text-[9px] font-bold tracking-[0.2em] uppercase mt-1">Deduction Maximization Protocol</p>
                </div>
-               <span className="text-xl font-bold text-[#ADFF2F] border border-[#ADFF2F]/30 bg-[#ADFF2F]/5 px-3 py-1 rounded shadow-[inset_0_0_5px_rgba(173,255,47,0.2)] tracking-widest">₹{formatInr(sumData.total_80c_limit)}</span>
+               <span className="text-xl font-mono font-black text-engraved-gold border border-[#333] bg-[#111] px-3 py-1 rounded-sm shadow-[var(--shadow-recessed)] tracking-widest">₹{formatInr(sumData.total_80c_limit)}</span>
             </div>
 
             <div className="relative z-10">
-               <div className="flex justify-between items-end mb-2 text-xs uppercase tracking-widest">
-                  <span className="text-2xl font-bold text-[#E0E0E0] drop-shadow-[0_0_5px_#E0E0E0]">₹{formatInr(sumData.total_invested)} <span className="text-[10px] text-[#ADFF2F] font-bold">ALLOCATED ({Math.floor(sumData.progress_percentage)}%)</span></span>
-                  <span className="text-[10px] text-[#FF8C00] font-bold tracking-[0.2em]">₹{formatInr(sumData.remaining_80c)} LEFT</span>
+               <div className="flex justify-between items-end mb-3 text-[9px] uppercase tracking-[0.2em] font-bold">
+                  <span className="text-2xl font-mono font-black text-engraved-gold drop-shadow-sm">₹{formatInr(sumData.total_invested)} <span className="text-[10px] text-[#a38a3d] font-bold font-sans">ALLOCATED ({Math.floor(sumData.progress_percentage)}%)</span></span>
+                  <span className="text-[10px] text-[#8B0000] font-bold tracking-[0.2em]">₹{formatInr(sumData.remaining_80c)} LEFT</span>
                </div>
-               <div className="w-full bg-[#111] border border-[#222] h-2.5 rounded-full overflow-hidden shadow-[inset_0_0_5px_#000]">
-                  <div className="bg-[#ADFF2F] h-full shadow-[0_0_15px_#ADFF2F] relative" style={{width: `${pct}%`}}>
-                     <div className="absolute top-0 left-0 right-0 h-full bg-gradient-to-r from-transparent to-white/40"></div>
+               <div className="w-full bg-[#050505] border border-[#333] h-3 rounded-xs overflow-hidden shadow-[var(--shadow-recessed)] p-0.5">
+                  <div className="bg-[#D4AF37] h-full rounded-[1px] relative shadow-[inset_0_0_5px_rgba(0,0,0,0.3)] transition-all duration-1000 ease-out" style={{width: `${pct}%`}}>
+                     <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/30"></div>
                   </div>
                </div>
             </div>
          </div>
 
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
             <div className="lg:col-span-2">
                <div className="flex justify-between items-center mb-4 px-1">
-                 <h3 className="text-sm font-bold text-[#E0E0E0] uppercase tracking-[0.2em] border-b border-[#333] pb-1">Declared Assets [80C]</h3>
-                 <button onClick={()=>onAdd(null)} className="flex items-center px-4 py-1.5 text-[10px] font-bold tracking-widest uppercase border border-[#ADFF2F]/50 bg-[#ADFF2F]/10 text-[#ADFF2F] hover:bg-[#ADFF2F]/20 transition-all shadow-[inset_0_0_10px_rgba(173,255,47,0.2)]">
-                    <Plus className="w-3 h-3 mr-1" /> Append
+                 <h3 className="text-[11px] font-bold text-[#e0e0e0] uppercase tracking-[0.3em] border-b border-[#333] pb-1">Declared Assets [80C]</h3>
+                 <button onClick={()=>onAdd(null)} className="flex items-center px-4 py-2 text-[9px] font-bold tracking-[0.2em] uppercase border border-[#D4AF37] bg-sunray text-black hover:bg-[#b0912c] transition-all shadow-plate rounded-sm animate-button-compress">
+                    <Plus className="w-4 h-4 mr-1" /> Append
                  </button>
                </div>
                
                {data.length === 0 ? (
-                 <div className={`${cyberPanelClass} p-8 text-center border-dashed border-[#555]`}>
-                    <p className="text-[#888] text-[10px] uppercase font-bold tracking-[0.2em]">Deduction array empty. Sub-optimal tax metrics applied.</p>
+                 <div className={`${horologyPanelClass} p-8 text-center border-dashed border-[#555]`}>
+                    <p className="text-[#888] text-[9px] uppercase font-bold tracking-[0.2em]">Deduction array empty. Sub-optimal tax metrics applied.</p>
                  </div>
                ) : (
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {data.map(t => (
-                       <div key={t.id} className={`${cyberPanelAltClass} p-5 rounded-xl border-l-[3px] border-l-[#ADFF2F] relative group hover:border-[#ADFF2F]/50 transition`}>
+                       <div key={t.id} className={`${horologyPanelAltClass} bg-sunray p-5 rounded-sm border-l-2 border-l-[#D4AF37] relative group hover:border-[#D4AF37]/50 transition plate-border shadow-plate`}>
                           <div className="absolute top-4 right-4 flex opacity-0 group-hover:opacity-100 transition-opacity">
-                             <button onClick={()=>onEdit(t)} className="p-1 mr-1 rounded bg-black/40 text-[#555] hover:text-[#00E5FF]"><Edit2 className="w-3 h-3"/></button>
-                             <button onClick={()=>onDelete(t.id)} className="p-1 rounded bg-black/40 text-[#555] hover:text-[#FF4444]"><Trash2 className="w-3 h-3"/></button>
+                             <button onClick={()=>onEdit(t)} className="p-1 mr-1 rounded-sm bg-[#111] border border-[#333] text-[#888] hover:text-[#D4AF37] animate-button-compress shadow-[var(--shadow-recessed)]"><Edit2 className="w-3 h-3"/></button>
+                             <button onClick={()=>onDelete(t.id)} className="p-1 rounded-sm bg-[#111] border border-[#333] text-[#888] hover:text-[#8B0000] animate-button-compress shadow-[var(--shadow-recessed)]"><Trash2 className="w-3 h-3"/></button>
                           </div>
-                          <span className="text-[9px] uppercase font-bold tracking-[0.2em] text-[#ADFF2F] border border-[#ADFF2F]/30 bg-[#ADFF2F]/10 px-2 py-0.5 rounded inline-block mb-2">{t.scheme}</span>
-                          <h4 className="text-sm font-bold text-[#E0E0E0] tracking-wider uppercase pr-10">{t.scheme} Asset</h4>
+                          <span className="text-[9px] uppercase font-bold tracking-[0.2em] text-[#a38a3d] border border-[#a38a3d]/30 bg-[#111] px-2 py-0.5 rounded-sm inline-block mb-3 shadow-[var(--shadow-recessed)]">{t.scheme}</span>
+                          <h4 className="text-xs font-bold text-engraved-gold tracking-widest uppercase pr-10">{t.scheme} Asset</h4>
                           <div className="mt-4 pt-4 border-t border-[#333] flex flex-col">
-                             <span className="text-xl font-bold tracking-widest text-[#00E5FF]">₹{formatInr(t.amount)}</span>
+                             <span className="text-xl font-mono font-black tracking-tight text-[#e0e0e0]">₹{formatInr(t.amount)}</span>
                              <span className="text-[9px] uppercase font-bold text-[#888] tracking-[0.2em]">DECLARED {t.financial_year}</span>
                           </div>
                        </div>
@@ -582,14 +586,14 @@ function TaxTab({ taxRaw, isLoading, onAdd, onEdit, onDelete }) {
             </div>
 
             {/* LIVE TAX CALCULATOR */}
-            <div className={`${cyberPanelClass} p-6 lg:sticky lg:top-6 rounded-xl border-t border-t-[#00E5FF]`}>
-               <h3 className="text-xs font-bold text-[#E0E0E0] uppercase tracking-[0.2em] mb-4 flex items-center border-b border-[#333] pb-2">
-                 <Calculator className="w-4 h-4 mr-2 text-[#00E5FF]"/> Diagnostic Core
+            <div className={`${horologyPanelClass} p-6 lg:sticky lg:top-6 border-t border-t-[#D4AF37]`}>
+               <h3 className="text-[10px] font-bold text-[#e0e0e0] uppercase tracking-[0.2em] mb-4 flex items-center border-b border-[#333] pb-3">
+                 <Calculator className="w-4 h-4 mr-2 text-[#D4AF37]"/> Diagnostic Core
                </h3>
                
-               <div className="bg-black/50 p-4 border border-[#333] rounded mb-6 flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-[#555] uppercase tracking-[0.2em]">Tax Vector</span>
-                  <select value={slab} onChange={e=>setSlab(Number(e.target.value))} className="bg-transparent border-0 border-b border-[#00E5FF]/50 px-1 py-1 font-bold text-[#00E5FF] text-xs uppercase focus:outline-none appearance-none">
+               <div className="bg-[#111] p-4 border border-[#333] rounded-sm mb-6 flex justify-between items-center shadow-[var(--shadow-recessed)]">
+                  <span className="text-[9px] font-bold text-[#888] uppercase tracking-[0.2em]">Tax Vector</span>
+                  <select value={slab} onChange={e=>setSlab(Number(e.target.value))} className="bg-[#050505] border border-[#333] px-2 py-1 font-bold font-mono text-[#D4AF37] text-xs uppercase focus:outline-none appearance-none rounded-sm shadow-[var(--shadow-recessed)]">
                      <option className="bg-[#111]" value={5}>BRACKET [05%]</option>
                      <option className="bg-[#111]" value={20}>BRACKET [20%]</option>
                      <option className="bg-[#111]" value={30}>BRACKET [30%]</option>
@@ -597,21 +601,21 @@ function TaxTab({ taxRaw, isLoading, onAdd, onEdit, onDelete }) {
                </div>
                
                <div className="space-y-4">
-                  <div className="flex justify-between border-b border-[#222] pb-3">
-                     <span className="text-[10px] font-bold text-[#888] uppercase tracking-[0.2em]">Deflected Load</span>
-                     <span className="font-bold text-[#ADFF2F] text-sm tracking-widest drop-shadow-[0_0_3px_#ADFF2F]">₹{formatInr(saved)}</span>
+                  <div className="flex justify-between border-b border-[#333] pb-3">
+                     <span className="text-[9px] font-bold text-[#888] uppercase tracking-[0.2em]">Deflected Load</span>
+                     <span className="font-mono font-black text-[#D4AF37] text-sm tracking-widest">₹{formatInr(saved)}</span>
                   </div>
-                  <div className="flex justify-between border-b border-[#222] pb-3">
-                     <span className="text-[10px] font-bold text-[#888] uppercase tracking-[0.2em]">Capacity Yield</span>
-                     <span className="font-bold text-[#FF8C00] text-sm tracking-widest">+₹{formatInr(potSave)}</span>
+                  <div className="flex justify-between border-b border-[#333] pb-3">
+                     <span className="text-[9px] font-bold text-[#888] uppercase tracking-[0.2em]">Capacity Yield</span>
+                     <span className="font-mono font-black text-[#a38a3d] text-sm tracking-widest">+₹{formatInr(potSave)}</span>
                   </div>
                </div>
 
                <div className="mt-8">
-                  <p className="text-[9px] uppercase font-bold tracking-[0.3em] text-[#00E5FF] text-center mb-4">Quick Provision</p>
+                  <p className="text-[9px] uppercase font-bold tracking-[0.3em] text-engraved-gold text-center mb-4">Quick Provision</p>
                   <div className="flex flex-wrap gap-2 justify-center">
                      {['ELSS', 'PPF', 'LIC'].map(p => (
-                       <button key={p} onClick={()=>onAdd(p)} className="px-3 py-1 border border-[#333] bg-[#111] hover:bg-[#00E5FF]/10 hover:border-[#00E5FF]/50 hover:text-[#00E5FF] text-[#888] text-[9px] font-bold tracking-[0.2em] rounded uppercase transition">
+                       <button key={p} onClick={()=>onAdd(p)} className="px-3 py-1.5 border border-[#333] bg-[#111] hover:bg-[#1a1a1a] hover:border-[#D4AF37]/50 hover:text-[#D4AF37] text-[#888] text-[9px] font-bold tracking-[0.2em] rounded-sm uppercase transition shadow-[var(--shadow-recessed)] animate-button-compress">
                           + {p}
                        </button>
                      ))}
@@ -630,20 +634,20 @@ function TaxEditorModal({ initial, onClose, onSave }) {
 
   const [fd, setFd] = useState(initialDef);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in font-mono">
-       <div className={`${cyberPanelClass} rounded-xl w-full max-w-sm overflow-hidden flex flex-col`}>
-          <div className="p-4 border-b border-[#00E5FF]/30 bg-[#00E5FF]/5"><h3 className="text-sm tracking-[0.3em] font-bold text-[#00E5FF] uppercase">{initial?.id?'Alter Asset':'Declare Asset'}</h3></div>
-          <div className="p-6 space-y-4 bg-black/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in font-sans">
+       <div className={`${horologyPanelClass} w-full max-w-sm overflow-hidden flex flex-col`}>
+          <div className="p-4 border-b border-[#333] bg-[#0d0d0d]"><h3 className="text-[10px] tracking-[0.3em] font-bold text-engraved-gold uppercase">{initial?.id?'Alter Asset':'Declare Asset'}</h3></div>
+          <div className="p-6 space-y-4 bg-sunray plate-border">
              <div>
-               <label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Instrument Type</label>
-               <select value={fd.scheme} onChange={e=>setFd({...fd, scheme:e.target.value})} className="w-full bg-black/50 border border-[#333] text-[#E0E0E0] rounded p-2 focus:border-[#00E5FF] focus:outline-none text-sm uppercase">
+               <label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Instrument Type</label>
+               <select value={fd.scheme} onChange={e=>setFd({...fd, scheme:e.target.value})} className="w-full bg-[#111] border border-[#333] text-[#e0e0e0] rounded-sm p-2 focus:border-[#D4AF37] focus:outline-none text-xs uppercase font-mono tracking-widest shadow-[var(--shadow-recessed)]">
                  {['ELSS','PPF','LIC','NPS','NSC','EPF','Home Loan Principal','Other'].map(c=><option key={c} value={c} className="bg-[#111]">{c}</option>)}
                </select>
              </div>
-             <div><label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Quantum [₹]</label><input type="number" required value={fd.amount} onChange={e=>setFd({...fd, amount:e.target.value})} className="w-full bg-[#ADFF2F]/10 border border-[#ADFF2F]/30 text-[#ADFF2F] font-bold tracking-widest rounded p-2 focus:border-[#ADFF2F] focus:outline-none" /></div>
-             <div><label className="block text-[10px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Fiscal Cycle</label><input value={fd.financial_year} disabled className="w-full bg-[#111] border border-[#222] text-[#555] rounded p-2 font-bold cursor-not-allowed" /></div>
+             <div><label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Quantum [₹]</label><input type="number" required value={fd.amount} onChange={e=>setFd({...fd, amount:e.target.value})} className="w-full bg-[#1a1a0f] border border-[#a38a3d]/30 text-[#D4AF37] font-mono font-black tracking-widest rounded-sm p-2 focus:border-[#D4AF37] focus:outline-none shadow-[var(--shadow-recessed)]" /></div>
+             <div><label className="block text-[9px] font-bold text-[#888] uppercase tracking-[0.2em] mb-2">Fiscal Cycle</label><input value={fd.financial_year} disabled className="w-full bg-[#050505] border border-[#333] text-[#555] rounded-sm p-2 font-mono font-black text-sm cursor-not-allowed shadow-[var(--shadow-recessed)]" /></div>
           </div>
-          <div className="p-4 border-t border-[#00E5FF]/30 bg-[#00E5FF]/5 flex gap-3"><button onClick={onClose} className="flex-1 py-2 bg-transparent border border-[#555] text-[#888] text-[10px] uppercase font-bold tracking-[0.2em] rounded">Abort</button><button onClick={()=>onSave(fd)} className="flex-1 py-2 bg-[#ADFF2F]/20 border border-[#ADFF2F]/50 text-[#ADFF2F] text-[10px] uppercase font-bold tracking-[0.2em] shadow-[inset_0_0_10px_rgba(173,255,47,0.2)] hover:bg-[#ADFF2F]/30 rounded transition-all">Submit</button></div>
+          <div className="p-4 border-t border-[#333] bg-[#050505] flex gap-3"><button onClick={onClose} className="flex-1 py-2.5 bg-[#111] border border-[#333] text-[#888] text-[9px] uppercase font-bold tracking-[0.2em] hover:text-[#e0e0e0] rounded-sm shadow-[var(--shadow-recessed)] animate-button-compress">Abort</button><button onClick={()=>onSave(fd)} className="flex-1 py-2.5 bg-[#D4AF37] text-black text-[9px] uppercase font-bold tracking-[0.2em] shadow-plate hover:bg-[#b0912c] rounded-sm transition-all animate-button-compress">Submit Bind</button></div>
        </div>
     </div>
   );

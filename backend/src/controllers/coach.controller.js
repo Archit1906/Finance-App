@@ -24,29 +24,30 @@ export const getCoachAdvice = async (req, res, next) => {
     const { message } = req.body;
     
     // In a real app, gather context and inject it. Doing a simple text proxy.
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return res.status(500).json({ success: false, error: 'Anthropic Key Not Configured' });
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return res.status(500).json({ success: false, error: 'Gemini Key Not Configured' });
 
     const systemPrompt = "You are a specialized AI financial coach for the 'Personal Wealth OS' app. Keep answers under 100 words. Be highly pragmatic, encouraging, and expert in personal finance.";
+    const userPrompt = `SYSTEM INSTRUCTION: ${systemPrompt}\n\nUSER MESSAGE: ${message || "Analyze my finances and give me one quick tip."}`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
        method: 'POST',
        headers: {
-         'x-api-key': apiKey,
-         'anthropic-version': '2023-06-01',
-         'content-type': 'application/json'
+         'Content-Type': 'application/json'
        },
        body: JSON.stringify({
-         model: "claude-3-haiku-20240307",
-         max_tokens: 300,
-         system: systemPrompt,
-         messages: [{ role: "user", content: message || "Analyze my finances and give me one quick tip." }]
+         contents: [{
+           parts: [{ text: userPrompt }]
+         }],
+         generationConfig: {
+           maxOutputTokens: 300
+         }
        })
     });
 
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
 
-    res.json({ success: true, data: data.content[0].text });
+    res.json({ success: true, data: data.candidates[0].content.parts[0].text });
   } catch (err) { next(err); }
 };
