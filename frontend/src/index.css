@@ -93,3 +93,41 @@
   text-shadow: -1px 0 rgba(173, 255, 47, 0.7);
   animation: glitch-anim 3s infinite linear alternate-reverse;
 }
+
+.bg-vault-blueprint {
+  background-color: #03080b;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.15), transparent 60%),
+    linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(0, 229, 255, 0.02) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.02) 2px, transparent 2px);
+  background-size: 100% 100%, 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+  background-position: center top, 0 0, 0 0, 0 0, 0 0;
+  animation: bg-drift 40s linear infinite;
+}
+
+@keyframes bg-drift {
+  0% { background-position: center top, 0 0, 0 0, 0 0, 0 0; }
+  100% { background-position: center top, 100px 100px, 100px 100px, 100px 100px, 100px 100px; }
+}
+
+@keyframes ignition {
+  0% { transform: scale(0.5) rotate(-30deg); filter: drop-shadow(0 0 0 rgba(204,0,0,0)); color: #CC0000; }
+  60% { transform: scale(1.4) rotate(15deg); filter: drop-shadow(0 0 30px #FFD700); color: #FFD700; }
+  100% { transform: scale(1) rotate(0); filter: drop-shadow(0 0 10px rgba(204,0,0,0.5)); color: #CC0000; }
+}
+
+.animate-ignition {
+  animation: ignition 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes vault-spin {
+  0% { transform: perspective(1000px) rotateY(0deg) scale(1); opacity: 1; }
+  50% { filter: brightness(1.5) drop-shadow(0 0 20px rgba(0, 229, 255, 0.8)); }
+  100% { transform: perspective(1000px) rotateY(90deg) scale(0.9); opacity: 0; }
+}
+
+.animate-vault-spin {
+  animation: vault-spin 0.7s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
