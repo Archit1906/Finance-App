@@ -3,22 +3,25 @@
 @theme {
   --font-sans: 'Inter', sans-serif;
   --font-bebas: '"Bebas Neue"', sans-serif;
+  --font-mono: '"JetBrains Mono"', monospace;
   
-  --color-ignite-bg: #0D0000;
-  --color-ignite-card: #1A0000;
-  --color-ignite-side: #110000;
+  --color-ignite-bg: #101010;
+  --color-ignite-card: rgba(26, 26, 26, 0.5);
+  --color-ignite-side: #151515;
   --color-ignite-red: #CC0000;
-  --color-ignite-hover: #FF1A1A;
+  --color-ignite-hover: #00E5FF;
+  --color-ignite-cyan: #00E5FF;
+  --color-ignite-lime: #ADFF2F;
   --color-ignite-alert: #FF4444;
-  --color-ignite-success: #00C853;
+  --color-ignite-success: #ADFF2F;
   --color-ignite-warning: #FFB300;
   --color-ignite-white: #F5F5F5;
   --color-ignite-muted: #B0A0A0;
-  --color-ignite-border: #2D0000;
-  --color-ignite-bhover: #660000;
+  --color-ignite-border: rgba(0, 229, 255, 0.15);
+  --color-ignite-bhover: rgba(0, 229, 255, 0.4);
 
-  --shadow-ignite-card: 0 4px 20px rgba(204, 0, 0, 0.15);
-  --shadow-ignite-focus: 0 0 0 3px rgba(204, 0, 0, 0.2);
+  --shadow-ignite-card: 0 4px 30px rgba(0, 0, 0, 0.5);
+  --shadow-ignite-focus: 0 0 0 3px rgba(0, 229, 255, 0.2);
 }
 
 @layer base {

@@ -327,7 +327,7 @@ function TransactionModal({ mode, tx, onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in">
       <div className="bg-ignite-card border border-ignite-border rounded-2xl w-full max-w-lg shadow-[0_4px_40px_rgba(204,0,0,0.2)] overflow-hidden flex flex-col max-h-[90vh] relative z-20">
         <div className="absolute top-[-50px] right-[-50px] w-[150px] h-[150px] bg-ignite-red/10 rounded-full blur-[50px] pointer-events-none"></div>
         <div className="flex justify-between items-center p-6 border-b border-ignite-border relative z-10 bg-[#110000]">
@@ -420,7 +420,7 @@ function CSVImportModal({ onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in">
       <div className="bg-ignite-card border border-ignite-border rounded-2xl p-8 w-full max-w-md shadow-[0_4px_40px_rgba(204,0,0,0.2)] relative overflow-hidden">
         <div className="absolute top-[-50px] right-[-50px] w-[150px] h-[150px] bg-ignite-red/10 rounded-full blur-[50px] pointer-events-none"></div>
         
