@@ -27,7 +27,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
-app.use(cors());
+// Example for Express
+app.use(cors({
+  origin: "https://your-frontend-url.vercel.app"
+}));
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(rateLimiter(150)); // Global API Rate Limit
