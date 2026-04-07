@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { Target, Plus, CheckCircle2, Presentation, Calendar, Repeat, MoreVertical, Edit2, PauseCircle, PlayCircle, Trash2, ShieldAlert, Award, ChevronDown, ChevronUp, Plane, Shield, Laptop, Home, Briefcase, Car, Heart, Smartphone, Gift, Coffee } from 'lucide-react';
+import { Target, Plus, ShieldAlert, Award, Plane, Shield, Laptop, Home, Briefcase, Car, Heart, Coffee, PlayCircle, PauseCircle, Edit2, Trash2, MoreVertical, Terminal, AlertTriangle, CheckCircle2, Activity } from 'lucide-react';
 import { cn } from '../lib/utils';
 import Confetti from 'react-confetti';
 
@@ -12,29 +12,62 @@ const CAT_ICONS = {
 
 const formatInr = (num) => Number(num || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 
+// Simple glitch effect text component
+function GlitchText({ text, glowColor }) {
+  return (
+    <span className="glitch-text font-mono font-black" data-text={text} style={{textShadow: `0 0 10px ${glowColor}`}}>
+       {text}
+    </span>
+  );
+}
+
+// Typewriter terminal component
+function TypewriterText({ text, active, colorClass, icon: Icon }) {
+  const [disp, setDisp] = useState('');
+  useEffect(() => {
+    if(!active) return;
+    setDisp('');
+    let i = 0;
+    const t = setInterval(() => {
+      setDisp(text.slice(0, i+1));
+      i++;
+      if (i > text.length) clearInterval(t);
+    }, 20); // FAST type
+    return () => clearInterval(t);
+  }, [text, active]);
+
+  return (
+    <div className="relative group overflow-hidden bg-[#050505]/80 border border-[#222]/50 p-4 rounded-xl shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md">
+       <div className="absolute inset-0 pointer-events-none crt-overlay opacity-50"></div>
+       <div className={cn("flex items-start text-sm font-mono tracking-widest relative z-10", colorClass)}>
+          <span className="mr-3 mt-0.5"><Icon className="w-4 h-4 shadow-sm" /></span>
+          <span className="leading-relaxed">{disp}<span className="animate-pulse">_</span></span>
+       </div>
+    </div>
+  );
+}
+
 export default function Goals() {
   const queryClient = useQueryClient();
-  const [modalMode, setModalMode] = useState(null); // 'add', 'edit'
+  const [modalMode, setModalMode] = useState(null);
   const [activeGoal, setActiveGoal] = useState(null);
-  const [contribGoal, setContribGoal] = useState(null); // specific to contribution modal
+  const [contribGoal, setContribGoal] = useState(null); 
   const [showConfetti, setShowConfetti] = useState(false);
-  const [openMenu, setOpenMenu] = useState(null); // track which drop-menu is open
+  const [openMenu, setOpenMenu] = useState(null);
   const menuRef = useRef();
+  
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setTimeout(() => setMounted(true), 100); }, []);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setOpenMenu(null);
-    };
+    const handleClickOutside = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setOpenMenu(null); };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const { data: goals = [], isLoading } = useQuery({
     queryKey: ['goals'],
-    queryFn: async () => {
-      const { data } = await api.get('/goals');
-      return data.data;
-    }
+    queryFn: async () => { const { data } = await api.get('/goals'); return data.data; }
   });
 
   const activeGoals = goals.filter(g => g.status !== 'achieved');
@@ -42,33 +75,27 @@ export default function Goals() {
   const sumSaved = goals.reduce((acc, g) => acc + Number(g.saved_amount), 0);
   const sumSip = activeGoals.reduce((acc, g) => g.status !== 'paused' ? acc + Number(g.monthly_sip) : acc, 0);
 
-  // -- MUTATIONS --
   const mutateGoal = useMutation({
     mutationFn: async ({ id, data, method }) => {
       if(method === 'DELETE') return await api.delete(`/goals/${id}`);
       if(method === 'PUT') return await api.put(`/goals/${id}`, data);
       return await api.post('/goals', data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['goals']);
-      setModalMode(null);
-      setOpenMenu(null);
-    }
+    onSuccess: () => { queryClient.invalidateQueries(['goals']); setModalMode(null); setOpenMenu(null); }
   });
 
-  // Calculate Nudges dynamically
   const insights = useMemo(() => {
-    const messages = [];
-    if (sumSip > 0) messages.push(`You're committed to ₹${formatInr(sumSip)}/mo in SIPs — great discipline!`);
+    const list = [];
+    if (sumSip > 0) list.push({ text: `SIPs — great discipline! Active commit: ₹${formatInr(sumSip)}/mo`, type: 'nominal' });
     
-    // Find closest goal
+    // Find closest
     const closest = [...activeGoals].sort((a,b) => (Number(b.saved_amount)/Number(b.target_amount)) - (Number(a.saved_amount)/Number(a.target_amount)))[0];
     if (closest) {
       const pct = (Number(closest.saved_amount)/Number(closest.target_amount)*100);
-      if (pct > 70) messages.push(`${closest.name} is ${Math.floor(pct)}% complete — just ₹${formatInr(closest.target_amount - closest.saved_amount)} more to go!`);
+      if (pct > 70) list.push({ text: `${closest.name} is ${Math.floor(pct)}% funded. System Nominal.`, type: 'nominal' });
     }
 
-    // Find delayed goals
+    // Find delayed
     const today = new Date();
     activeGoals.forEach(g => {
        const msLeft = new Date(g.target_date) - today;
@@ -77,60 +104,69 @@ export default function Goals() {
        
        if (Number(g.monthly_sip) < requiredSip * 0.8 && g.status !== 'paused') {
           const shortageMonths = Math.ceil(((Number(g.target_amount) - Number(g.saved_amount)) / (Number(g.monthly_sip) || 1)) - monthsLeft);
-          if (shortageMonths > 1) messages.push(`At your current savings rate, ${g.name} might be delayed by ~${shortageMonths} month${shortageMonths > 1?'s':''}.`);
+          if (shortageMonths > 1 && list.length < 3) list.push({ text: `${g.name} might be delayed by ~${shortageMonths} mo. Adjust vectors.`, type: 'danger' });
        }
     });
-    return messages.slice(0, 3);
+    return list.slice(0, 3);
   }, [activeGoals, sumSip]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-20 relative">
+    <div className="space-y-6 animate-fade-in pb-20 relative bg-transparent text-[#E0E0E0] min-h-[90vh]">
+      <div className="fixed inset-0 pointer-events-none bg-mesh-grid z-[-1] opacity-50 mix-blend-screen"></div>
+
       {showConfetti && <Confetti recycle={false} numberOfPieces={500} onConfettiComplete={() => setShowConfetti(false)} style={{zIndex: 9999, position: 'fixed'}} />}
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Financial Goals</h1>
-          <p className="text-xs text-gray-500 mt-1">Track milestones and manage your SIP requirements</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 border-b border-[#222] pb-6">
+        <div className="relative group overflow-hidden">
+          <div className="absolute inset-0 bg-[#00E5FF]/10 w-0 group-hover:w-full transition-all duration-1000 ease-in-out pointer-events-none"></div>
+          <h1 className="text-3xl font-bebas tracking-[5px] text-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)]">Financial Goals</h1>
+          <p className="text-xs font-mono tracking-widest text-[#B0A0A0] mt-1.5 uppercase">Network Milestones and Sub-System allocations</p>
         </div>
-        <button onClick={() => { setActiveGoal(null); setModalMode('add'); }} className="flex items-center px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow-sm hover:bg-indigo-700 hover:-translate-y-0.5 transition-all w-full sm:w-auto justify-center">
-          <Plus className="w-5 h-5 mr-2" />
-          Create Goal
+        <button onClick={() => { setActiveGoal(null); setModalMode('add'); }} className="group flex items-center px-6 py-2.5 bg-[#0a0a0a] border border-[#00E5FF]/40 text-[#00E5FF] font-mono font-bold tracking-widest rounded-none shadow-[inset_0_0_10px_rgba(0,229,255,0.1),0_0_10px_rgba(0,229,255,0.1)] hover:bg-[#00E5FF]/10 hover:border-[#00E5FF] transition-all w-full sm:w-auto justify-center relative overflow-hidden">
+          <div className="absolute inset-x-0 bottom-0 h-0.5 bg-[#00E5FF] scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+          <Plus className="w-4 h-4 mr-3 group-hover:rotate-90 transition-transform duration-500" />
+          INITIALIZE_GOAL
         </button>
       </div>
 
       {/* SUMMARY STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center">
-          <span className="text-gray-500 text-xs font-bold uppercase tracking-wide">Total Active Goals</span>
-          <span className="text-2xl font-black text-gray-900 mt-1">{activeGoals.length}</span>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-[#0a0a0a]/60 backdrop-blur-xl p-5 border border-[#222] flex flex-col justify-center relative group overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#00E5FF]/50 group-hover:bg-[#00E5FF] transition-colors shadow-[0_0_10px_#00E5FF]"></div>
+          <span className="text-[#888] text-[10px] font-mono font-bold uppercase tracking-[0.2em] mb-1">Active Goals</span>
+          <span className="text-3xl font-mono font-black text-[#00E5FF]">{mounted ? activeGoals.length : 0}</span>
         </div>
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center border-l-[3px] border-l-gray-300">
-          <span className="text-gray-500 text-xs font-bold uppercase tracking-wide">Total Target</span>
-          <span className="text-2xl font-black text-gray-900 mt-1">₹{formatInr(sumTarget)}</span>
+        <div className="bg-[#0a0a0a]/60 backdrop-blur-xl p-5 border border-[#222] flex flex-col justify-center relative group overflow-hidden">
+           <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#00E5FF]/30 group-hover:bg-[#00E5FF] transition-colors"></div>
+          <span className="text-[#888] text-[10px] font-mono font-bold uppercase tracking-[0.2em] mb-1">Total Target</span>
+          <span className="text-3xl font-mono font-black text-[#E0E0E0]">₹<GlitchText text={formatInr(sumTarget)} glowColor="transparent" /></span>
         </div>
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center border-l-[3px] border-l-emerald-500 relative overflow-hidden">
-          <CheckCircle2 className="w-16 h-16 absolute -right-4 top-1/2 -translate-y-1/2 text-emerald-50 opacity-50" />
-          <span className="text-gray-500 text-xs font-bold uppercase tracking-wide">Total Saved</span>
-          <span className="text-2xl font-black text-gray-900 mt-1">₹{formatInr(sumSaved)}</span>
+        <div className="bg-[#0a0a0a]/60 backdrop-blur-xl p-5 border border-[#222] flex flex-col justify-center relative group overflow-hidden">
+           <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ADFF2F]/50 group-hover:bg-[#ADFF2F] transition-colors shadow-[0_0_10px_#ADFF2F]"></div>
+          <span className="text-[#888] text-[10px] font-mono font-bold uppercase tracking-[0.2em] mb-1">Total Funded</span>
+          <span className="text-3xl font-mono font-black text-[#ADFF2F]">₹<GlitchText text={formatInr(sumSaved)} glowColor="transparent" /></span>
         </div>
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center border-l-[3px] border-l-indigo-600 relative overflow-hidden">
-          <Repeat className="w-16 h-16 absolute -right-3 top-1/2 -translate-y-1/2 text-indigo-50 opacity-40" />
-          <span className="text-gray-500 text-xs font-bold uppercase tracking-wide">Monthly SIP Committed</span>
-          <span className="text-2xl font-black text-indigo-600 mt-1">₹{formatInr(sumSip)}<span className="text-lg text-indigo-400">/mo</span></span>
+        <div className="bg-[#0a0a0a]/60 backdrop-blur-xl p-5 border border-[#222] flex flex-col justify-center relative group overflow-hidden">
+           <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ADFF2F]/50 group-hover:bg-[#ADFF2F] transition-colors shadow-[0_0_10px_#ADFF2F]"></div>
+          <span className="text-[#888] text-[10px] font-mono font-bold uppercase tracking-[0.2em] mb-1 text-[#ADFF2F]/80">SIP Uplink</span>
+          <div className="flex font-mono items-end gap-1">
+             <span className="text-3xl font-black text-[#ADFF2F]">₹<GlitchText text={formatInr(sumSip)} glowColor="#ADFF2F" /></span>
+             <span className="text-[10px] text-[#ADFF2F]/60 tracking-widest mb-1.5 uppercase">/ mo</span>
+          </div>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="h-64 flex items-center justify-center bg-white rounded-2xl border border-gray-100"><div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div></div>
+        <div className="h-64 flex items-center justify-center bg-transparent"><div className="w-10 h-10 border-4 border-[#222] border-t-[#00E5FF] rounded-full animate-spin"></div></div>
       ) : goals.length === 0 ? (
-        <div className="bg-white p-16 rounded-2xl border border-gray-100 text-center flex flex-col items-center">
-           <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-6"><Target className="w-10 h-10 text-indigo-300" /></div>
-           <h2 className="text-2xl font-bold text-gray-900 mb-2">No financial goals yet</h2>
-           <p className="text-gray-500 max-w-sm mb-8">Set a goal — whether it's a trip, emergency fund, or retirement — and we'll help you get there.</p>
-           <button onClick={() => { setActiveGoal(null); setModalMode('add'); }} className="px-6 py-3 bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition font-bold text-lg">+ Create Your First Goal</button>
+        <div className="bg-[#0a0a0a]/60 backdrop-blur-xl p-16 border border-[#222] text-center flex flex-col items-center">
+           <Target className="w-16 h-16 text-[#00E5FF]/40 mb-6 drop-shadow-[0_0_15px_#00E5FF]" />
+           <h2 className="text-2xl font-mono font-bold text-[#F5F5F5] mb-2 uppercase tracking-widest">No Node Dependencies Found</h2>
+           <p className="text-[#B0A0A0] max-w-sm mb-8 font-mono text-xs leading-loose">Install core goal parameters array to initialize holographic monitoring sequences.</p>
+           <button onClick={() => { setActiveGoal(null); setModalMode('add'); }} className="px-6 py-3 bg-[#0a0a0a] border border-[#00E5FF] text-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.2)] font-mono font-bold text-xs uppercase tracking-widest hover:bg-[#00E5FF] hover:text-[#000] transition-colors">INITIALIZE</button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
           {goals.map(goal => (
              <GoalCard 
                key={goal.id} 
@@ -151,60 +187,45 @@ export default function Goals() {
       )}
 
       {goals.length > 0 && (
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-           <div className="lg:col-span-2 space-y-6">
-             {/* TIMELINE VIEW */}
-             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto min-h-[160px]">
-               <h3 className="text-sm font-bold text-gray-900 mb-8 uppercase tracking-wider flex items-center"><Calendar className="w-4 h-4 mr-2" /> Goal Progress Timeline</h3>
-               <TimelinePlotter goals={activeGoals} />
-             </div>
-
-             {/* NUDGES / INSIGHTS */}
-             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {insights.map((msg, i) => (
-                  <div key={i} className="bg-gradient-to-b from-indigo-50 to-white p-4 border border-indigo-100 rounded-2xl flex items-start shadow-sm">
-                    <ShieldAlert className="w-5 h-5 text-indigo-600 mr-3 shrink-0" />
-                    <p className="text-sm font-semibold text-gray-800 leading-snug">{msg}</p>
-                  </div>
-                ))}
-             </div>
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10">
+           <div className="lg:col-span-2 flex flex-col justify-end space-y-4">
+              <h3 className="font-mono text-[10px] text-[#00E5FF] tracking-[0.3em] uppercase opacity-70 flex items-center gap-2 mb-2"><Terminal className="w-3 h-3" /> System Log Terminal</h3>
+              {insights.map((msg, i) => (
+                 <TypewriterText 
+                   key={i} 
+                   text={msg.text} 
+                   active={mounted} 
+                   colorClass={msg.type === 'danger' ? 'text-[#FF4444]' : 'text-[#ADFF2F]'} 
+                   icon={msg.type === 'danger' ? AlertTriangle : CheckCircle2}
+                 />
+              ))}
            </div>
 
            {/* SIP CALCULATOR WIDGET */}
            <div className="lg:col-span-1">
-              <SIPCalculator goals={activeGoals} />
+              <SIPHUD goals={activeGoals} />
            </div>
          </div>
       )}
 
       {/* MODALS */}
       {(modalMode === 'add' || modalMode === 'edit') && (
-        <GoalEditorModal 
-           goal={activeGoal} 
-           onClose={() => setModalMode(null)} 
-           onSave={(data) => {
-              mutateGoal.mutate({ id: activeGoal?.id, data, method: activeGoal ? 'PUT' : 'POST' });
-           }}
-        />
+        <GoalEditorModal goal={activeGoal} onClose={() => setModalMode(null)} onSave={(data) => mutateGoal.mutate({ id: activeGoal?.id, data, method: activeGoal ? 'PUT' : 'POST' })} />
       )}
       
       {contribGoal && (
-        <ContributionModal 
-           goal={contribGoal} 
-           onClose={() => setContribGoal(null)}
-           onConfirm={async (amount) => {
+        <ContributionModal goal={contribGoal} onClose={() => setContribGoal(null)} onConfirm={async (amount) => {
              const res = await api.put(`/goals/${contribGoal.id}/contribute`, { amount });
              if (Number(res.data.data.saved_amount) >= Number(res.data.data.target_amount)) setShowConfetti(true);
              queryClient.invalidateQueries(['goals']);
              setContribGoal(null);
-           }}
-        />
+        }} />
       )}
     </div>
   );
 }
 
-// --- GOAL CARD COMPONENT ---
+// --- HOLOGRAPHIC GOAL CARD ---
 function GoalCard({ goal, onContribute, menuOpen, setOpenMenu, menuRef, onAction }) {
   const Icon = CAT_ICONS[goal.category] || Target;
   const isAchieved = goal.status === 'achieved';
@@ -213,131 +234,136 @@ function GoalCard({ goal, onContribute, menuOpen, setOpenMenu, menuRef, onAction
   const saved = Number(goal.saved_amount);
   const sip = Number(goal.monthly_sip);
   
-  let percentage = Math.min(100, Math.max(0, (saved / target) * 100));
-  if (isNaN(percentage)) percentage = 0;
+  let fundPct = Math.min(100, Math.max(0, (saved / target) * 100));
+  if (isNaN(fundPct)) fundPct = 0;
 
-  // Ring colors
-  let ringColor = '#ef4444'; // red (0-40)
-  if (percentage > 40) ringColor = '#f59e0b'; // amber (41-75)
-  if (percentage > 75) ringColor = '#3b82f6'; // blue (76-99)
-  if (percentage >= 100) ringColor = '#10b981'; // green (100)
-  if (isAchieved) ringColor = '#10b981';
-
-  // SVG Math
-  const radius = 36;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
-
-  // Date Math
   const today = new Date();
   const tDate = new Date(goal.target_date);
+  const CREATED_FICT = new Date(today); // fictional creation date for time inner ring
+  CREATED_FICT.setFullYear(today.getFullYear()-1);
+  if(goal.createdAt) CREATED_FICT.setTime(new Date(goal.createdAt).getTime());
+  
+  const totalDays = Math.max(1, (tDate - CREATED_FICT) / (1000*60*60*24));
+  const daysPassed = Math.max(0, (today - CREATED_FICT) / (1000*60*60*24));
+  let timePct = Math.min(100, (daysPassed / totalDays) * 100);
+  
   const daysLeft = Math.ceil((tDate - today) / (1000 * 60 * 60 * 24));
   let monthsLeft = Math.max(1, daysLeft / 30);
   
-  // Projection String
   let projectionStr = '';
-  let projectionColor = 'text-gray-500';
-  if (!isAchieved) {
-    if (isPaused) {
-       projectionStr = "Contributions Paused";
-       projectionColor = "text-gray-400";
-    } else {
-       const reqSip = (target - saved) / monthsLeft;
-       const monthsToFinish = sip > 0 ? (target - saved) / sip : 999;
-       if (sip >= reqSip * 0.95) {
-          const dateProj = new Date(today);
-          dateProj.setMonth(dateProj.getMonth() + monthsToFinish);
-          projectionStr = `On track to finish ${dateProj.toLocaleString('default',{month:'short', year:'numeric'})}`;
-          projectionColor = "text-emerald-600";
-       } else {
-          const shortageMonths = Math.ceil(monthsToFinish - monthsLeft);
-          projectionStr = shortageMonths > 100 ? "Goal stagnating" : `Behind pacing by ~${shortageMonths} mo`;
-          projectionColor = "text-rose-600";
-       }
-    }
+  let ringColor = '#00E5FF'; // Nominal Cyan
+  let timeColor = '#00E5FF44'; // Dimmer for internal
+  let statusTx = 'text-[#00E5FF]';
+  
+  if (isAchieved) {
+     ringColor = '#ADFF2F'; timeColor = '#ADFF2F44'; statusTx = 'text-[#ADFF2F]';
+  } else if (isPaused) {
+     ringColor = '#555'; timeColor = '#333'; statusTx = 'text-[#888]';
+     projectionStr = "PAUSED";
+  } else {
+     const reqSip = (target - saved) / monthsLeft;
+     const monthsToFinish = sip > 0 ? (target - saved) / sip : 999;
+     if (sip >= reqSip * 0.95) {
+        const d2 = new Date(today); d2.setMonth(d2.getMonth() + monthsToFinish);
+        projectionStr = `NOMINAL: ETA ${d2.toLocaleString('default',{month:'short', year:'2-digit'})}`;
+     } else {
+        const short = Math.ceil(monthsToFinish - monthsLeft);
+        projectionStr = short > 100 ? "WARNING: STALLED" : `DANGER: BEHIND ${short}MO`;
+        ringColor = '#FF4444'; timeColor = '#FF444455'; statusTx = 'text-[#FF4444]';
+     }
   }
 
+  // SVG Concentric Rings Setup
+  const outerR = 45; const innerR = 30;
+  const outerCirc = 2 * Math.PI * outerR;
+  const innerCirc = 2 * Math.PI * innerR;
+  const outerDash = outerCirc - (fundPct / 100) * outerCirc;
+  const innerDash = innerCirc - (timePct / 100) * innerCirc;
+
   return (
-    <div className={cn("bg-white p-6 rounded-2xl shadow-sm border relative transition-all group", isAchieved ? "border-emerald-200" : isPaused ? "border-gray-200 opacity-80" : "border-gray-100 hover:shadow-md")}>
-      
-      {/* Dynamic Status Banner */}
-      {isAchieved && <div className="absolute inset-0 bg-emerald-50/60 rounded-2xl pointer-events-none border border-emerald-400 opacity-60"></div>}
+    <div className={cn("bg-[#0a0a0a]/80 backdrop-blur-md p-6 border relative transition-all group overflow-hidden", isAchieved ? "border-[#ADFF2F]/30" : isPaused ? "border-[#222]" : "border-[#222] hover:border-[#00E5FF]/40 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(0,229,255,0.1)]")}>
+       
+       <div className="absolute inset-0 pointer-events-none opacity-[0.02]" style={{backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '12px 12px'}}></div>
       
       {/* 3 Dot Menu */}
-      <div className="absolute top-4 right-4 z-10" ref={menuOpen ? menuRef : null}>
-         <button onClick={(e) => { e.stopPropagation(); setOpenMenu(menuOpen ? null : goal.id); }} className={cn("p-1 rounded-md text-gray-400 hover:text-gray-800 transition-opacity", menuOpen ? "opacity-100 bg-gray-100" : "opacity-0 group-hover:opacity-100")}>
-           <MoreVertical className="w-5 h-5" />
+      <div className="absolute top-4 right-4 z-20" ref={menuOpen ? menuRef : null}>
+         <button onClick={(e) => { e.stopPropagation(); setOpenMenu(menuOpen ? null : goal.id); }} className="p-1 text-[#888] hover:text-[#E0E0E0] outline-none">
+           <MoreVertical className="w-4 h-4" />
          </button>
          {menuOpen && (
-           <div className="absolute right-0 top-8 w-44 bg-white border border-gray-100 shadow-xl rounded-xl py-2 animate-in slide-in-from-top-2">
-             <button onClick={()=>onAction('edit')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium flex items-center"><Edit2 className="w-4 h-4 mr-2"/> Edit Goal</button>
+           <div className="absolute right-0 top-6 w-36 bg-[#050505] border border-[#222] shadow-[0_0_15px_#000] py-1 font-mono text-[10px] uppercase tracking-widest z-50">
+             <button onClick={()=>onAction('edit')} className="w-full text-left px-3 py-2 text-[#E0E0E0] hover:bg-[#111] hover:text-[#00E5FF]"><Edit2 className="w-3 h-3 inline mr-2"/> EDIT</button>
              {isPaused ? 
-               <button onClick={()=>onAction('active')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium flex items-center"><PlayCircle className="w-4 h-4 mr-2"/> Resume Saving</button>
-               : !isAchieved && <button onClick={()=>onAction('pause')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium flex items-center"><PauseCircle className="w-4 h-4 mr-2"/> Pause Goal</button>
+               <button onClick={()=>onAction('active')} className="w-full text-left px-3 py-2 text-[#E0E0E0] hover:bg-[#111] hover:text-[#00E5FF]"><PlayCircle className="w-3 h-3 inline mr-2"/> RESUME</button>
+               : !isAchieved && <button onClick={()=>onAction('pause')} className="w-full text-left px-3 py-2 text-[#E0E0E0] hover:bg-[#111] hover:text-[#FFB300]"><PauseCircle className="w-3 h-3 inline mr-2"/> PAUSE</button>
              }
-             {!isAchieved && <button onClick={()=>onAction('achieve')} className="w-full text-left px-4 py-2 text-sm text-emerald-600 hover:bg-emerald-50 font-medium flex items-center"><Award className="w-4 h-4 mr-2"/> Mark Achieved</button>}
-             <div className="h-px bg-gray-100 my-1"></div>
-             <button onClick={()=>onAction('delete')} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-bold flex items-center"><Trash2 className="w-4 h-4 mr-2"/> Delete Goal</button>
+             {!isAchieved && <button onClick={()=>onAction('achieve')} className="w-full text-left px-3 py-2 text-[#ADFF2F] hover:bg-[#111]"><Award className="w-3 h-3 inline mr-2"/> ACHIEVE</button>}
+             <button onClick={()=>onAction('delete')} className="w-full text-left px-3 py-2 text-[#FF4444] hover:bg-[#111] mt-1 border-t border-[#222]"><Trash2 className="w-3 h-3 inline mr-2"/> DELETE</button>
            </div>
          )}
       </div>
 
       {/* TOP ROW */}
-      <div className="flex justify-between items-start mb-6 align-top">
+      <div className="flex justify-between items-start mb-6 relative z-10">
          <div className="pr-10">
-            <div className="flex items-center space-x-2">
-               <div className="bg-gray-100 p-2 rounded-lg text-gray-600 border border-gray-200"><Icon className="w-5 h-5"/></div>
-               <span className="text-[10px] uppercase font-black tracking-wider text-gray-500 bg-gray-100 px-2 py-1 rounded-md">{goal.category}</span>
-               {isAchieved && <span className="text-[10px] uppercase font-black tracking-wider text-emerald-700 bg-emerald-100 px-2 py-1 rounded-md flex items-center"><Award className="w-3 h-3 mr-1"/> Achieved!</span>}
-               {isPaused && <span className="text-[10px] uppercase font-black tracking-wider text-gray-500 bg-gray-200 px-2 py-1 rounded-md">Paused</span>}
+            <div className="flex items-center space-x-3">
+               <div className="text-[#888]"><Icon className="w-4 h-4"/></div>
+               <span className="text-[9px] uppercase font-mono tracking-[0.2em] text-[#666] border border-[#333] px-2 py-0.5">{goal.category}</span>
             </div>
-            <h3 className="text-xl font-black text-gray-900 mt-3 leading-tight tracking-tight">{goal.name}</h3>
+            <h3 className="text-xl font-sans tracking-wide text-[#E0E0E0] mt-3 font-medium truncate w-[200px]">{goal.name}</h3>
          </div>
       </div>
 
-      {/* MIDDLE ROW (SVG RING) */}
-      <div className="flex flex-col items-center justify-center my-6 relative z-10">
-         <div className="relative w-28 h-28 flex items-center justify-center">
-            {/* Background track */}
-            <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-               <circle cx="56" cy="56" r={radius} stroke="#f3f4f6" strokeWidth="12" fill="none" />
-               <circle cx="56" cy="56" r={radius} stroke={ringColor} strokeWidth="12" fill="none" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
+      {/* HOLOGRAPHIC GAUGE */}
+      <div className="flex flex-col items-center justify-center my-8 relative z-10">
+         <div className="relative w-32 h-32 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+            <svg className="absolute inset-0 w-full h-full transform -rotate-90 filter drop-shadow-[0_0_5px_currentColor]" style={{color: ringColor}}>
+               {/* Grid / Target ticks */}
+               {[...Array(12)].map((_, i) => <line key={i} x1="64" y1="15" x2="64" y2="17" transform={`rotate(${i*30} 64 64)`} stroke="#444" strokeWidth="1" />)}
+               {/* Inner Time Ring */}
+               <circle cx="64" cy="64" r={innerR} stroke="#111" strokeWidth="4" fill="none" />
+               <circle cx="64" cy="64" r={innerR} stroke={timeColor} strokeWidth="4" fill="none" strokeDasharray={innerCirc} strokeDashoffset={innerDash} strokeLinecap="square" className="transition-all duration-1000" />
+               {/* Outer Funding Ring */}
+               <circle cx="64" cy="64" r={outerR} stroke="#111" strokeWidth="2" fill="none" />
+               <circle cx="64" cy="64" r={outerR} stroke={ringColor} strokeWidth="6" fill="none" strokeDasharray={outerCirc} strokeDashoffset={outerDash} strokeLinecap="butt" className="transition-all duration-1000" />
             </svg>
             <div className="flex flex-col items-center">
-               <span className="text-2xl font-black text-gray-900" style={{color: ringColor}}>{Math.floor(percentage)}%</span>
+               <span className="text-xl font-mono font-black" style={{color: ringColor, textShadow: `0 0 10px ${ringColor}88`}}>{Math.floor(fundPct)}%</span>
             </div>
          </div>
-         <p className="text-sm font-bold text-gray-800 mt-4 rounded-full bg-gray-100 px-4 py-1.5 shadow-sm border border-black/5">
-           ₹{formatInr(saved)} <span className="text-gray-400 font-medium mx-1">of</span> ₹{formatInr(target)}
-         </p>
       </div>
 
-      {/* BOTTOM ROW (DETAILS & BUTTON) */}
-      <div className="border-t border-gray-100 pt-5 mt-2 flex flex-col gap-3 relative z-10">
-         <div className="flex justify-between items-center px-1">
-            <div className="flex items-center text-gray-600 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">
-               <Calendar className="w-4 h-4 mr-2 opacity-50 text-indigo-600" />
-               <div className="flex flex-col">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Target Date</span>
-                  <span className="text-xs font-black text-gray-900">{tDate.toLocaleString('default',{month:'short', year:'numeric'})}</span>
-               </div>
+      {/* PARAMETERS */}
+      <div className="border-t border-[#222] pt-4 flex flex-col gap-3 relative z-10">
+         <div className="flex justify-between items-center text-xs font-mono">
+            <div className="flex flex-col">
+               <span className="text-[9px] text-[#888] tracking-widest uppercase">Target</span>
+               <span className="text-[#00E5FF]">₹{formatInr(target)}</span>
             </div>
-            <div className="flex items-center text-gray-600 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">
-               <Repeat className="w-4 h-4 mr-2 opacity-50 text-indigo-600" />
-               <div className="flex flex-col">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Monthly SIP</span>
-                  <span className="text-xs font-black text-gray-900">₹{formatInr(sip)}</span>
-               </div>
+            <div className="flex flex-col text-right">
+               <span className="text-[9px] text-[#888] tracking-widest uppercase">Funded</span>
+               <span className={cn(statusTx)}>₹{formatInr(saved)}</span>
             </div>
          </div>
-         <div className="flex justify-between items-end px-1 mt-1">
+         <div className="flex justify-between items-center text-xs font-mono">
             <div className="flex flex-col">
-               <span className="text-xs font-bold text-gray-800">{daysLeft > 0 ? `${daysLeft} days left` : 'Past due'}</span>
-               <span className={cn("text-[11px] font-bold mt-0.5", projectionColor)}>{projectionStr}</span>
+               <span className="text-[9px] text-[#888] tracking-widest uppercase">Terminal Date</span>
+               <span className="text-[#E0E0E0]">{tDate.toLocaleString('default',{month:'short', year:'numeric'})}</span>
+            </div>
+            <div className="flex flex-col text-right">
+               <span className="text-[9px] text-[#888] tracking-widest uppercase">Monthly Uplink</span>
+               <span className="text-[#E0E0E0]">₹{formatInr(sip)}</span>
+            </div>
+         </div>
+         
+         <div className="flex justify-between items-end mt-2 pt-2 border-t border-[#222] border-dashed">
+            <div className="flex flex-col">
+               <span className={cn("text-[9px] font-mono tracking-widest uppercase", statusTx)}>{projectionStr}</span>
+               <span className="text-[10px] font-mono text-[#666] uppercase mt-0.5">{daysLeft > 0 ? `D-${daysLeft} Days` : 'EXPIRED'}</span>
             </div>
             {!isAchieved && (
-               <button onClick={onContribute} className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl text-xs hover:bg-indigo-700 hover:shadow-md transition-all">
-                 + Add
+               <button onClick={onContribute} className="px-3 py-1 bg-[#111] border border-[#333] text-[#E0E0E0] font-mono hover:text-[#00E5FF] hover:border-[#00E5FF] text-[10px] tracking-widest transition-all">
+                 +UPLINK
                </button>
             )}
          </div>
@@ -346,96 +372,8 @@ function GoalCard({ goal, onContribute, menuOpen, setOpenMenu, menuRef, onAction
   );
 }
 
-// --- CONTRIBUTION MODAL ---
-function ContributionModal({ goal, onClose, onConfirm }) {
-  const [val, setVal] = useState(goal.monthly_sip || 5000);
-  const presets = [1000, 5000, 10000, 25000];
-  const isFinishLine = Number(goal.saved_amount) + Number(val) >= Number(goal.target_amount);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in">
-       <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative overflow-hidden">
-          {/* Decorative fade */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-          
-          <h3 className="text-xl font-bold text-gray-900 mb-1">Add Contribution</h3>
-          <p className="text-sm font-medium text-gray-500 mb-6 flex flex-col gap-1">
-            <span>Funding <b>{goal.name}</b></span>
-            <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 w-fit rounded-md text-xs border border-indigo-100">Target: ₹{formatInr(goal.target_amount)}</span>
-          </p>
-          
-          <div className="flex flex-wrap gap-2 mb-6">
-             {presets.map(p => (
-                <button key={p} onClick={()=>setVal(p)} className={cn("px-3 py-1.5 rounded-lg text-sm font-bold transition-all border", val === p ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100")}>
-                  ₹{formatInr(p)}
-                </button>
-             ))}
-          </div>
-
-          <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Custom Amount (₹)</label>
-          <input type="number" min="1" value={val} onChange={e=>setVal(e.target.value)} className="w-full text-2xl font-black border border-gray-200 rounded-xl p-4 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 text-gray-900 mb-6 transition-all" />
-
-          {isFinishLine && <div className="mb-4 bg-emerald-50 text-emerald-800 p-3 rounded-lg text-sm font-bold border border-emerald-200 flex items-center shadow-sm"><Award className="w-4 h-4 mr-2"/> This accomplishes your goal!</div>}
-
-          <div className="flex gap-3">
-             <button onClick={onClose} className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50">Cancel</button>
-             <button onClick={()=>onConfirm(val)} disabled={!val || Number(val)<=0} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50">Confirm</button>
-          </div>
-       </div>
-    </div>
-  );
-}
-
-// --- EDITOR MODAL ---
-function GoalEditorModal({ goal, onClose, onSave }) {
-  const [fd, setFd] = useState({
-     name: goal?.name || '', category: goal?.category || 'Travel',
-     target_amount: goal?.target_amount || '', saved_amount: goal?.saved_amount || 0,
-     target_date: goal ? goal.target_date.split('T')[0] : '', monthly_sip: goal?.monthly_sip || ''
-  });
-
-  const calcPMT = () => {
-    if(!fd.target_amount || !fd.target_date) return;
-    const msLeft = new Date(fd.target_date) - new Date();
-    const mLeft = Math.max(1, Math.ceil(msLeft / (1000*60*60*24*30)));
-    const req = (Number(fd.target_amount) - Number(fd.saved_amount||0)) / mLeft;
-    setFd({...fd, monthly_sip: Math.ceil(Math.max(0, req))});
-  };
-
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in">
-       <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-          <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
-             <h3 className="text-xl font-black text-gray-900">{goal ? 'Edit Goal' : 'Create New Goal'}</h3>
-          </div>
-          <div className="p-6 overflow-y-auto space-y-5">
-             <div><label className="block text-xs font-bold text-gray-700 uppercase mb-2">Goal Name*</label><input required value={fd.name} onChange={e=>setFd({...fd, name:e.target.value})} className="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500 font-bold" placeholder="Europe Trip" /></div>
-             <div>
-               <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Category*</label>
-               <select value={fd.category} onChange={e=>setFd({...fd, category:e.target.value})} className="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500 font-bold bg-white">
-                 {Object.keys(CAT_ICONS).map(c => <option key={c} value={c}>{c}</option>)}
-               </select>
-             </div>
-             <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-xs font-bold text-gray-700 uppercase mb-2">Target Amount (₹)*</label><input type="number" onBlur={calcPMT} required value={fd.target_amount} onChange={e=>setFd({...fd, target_amount:e.target.value})} className="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500 font-black text-indigo-600" /></div>
-                <div><label className="block text-xs font-bold text-gray-700 uppercase mb-2">Already Saved (₹)</label><input type="number" onBlur={calcPMT} disabled={!!goal} value={fd.saved_amount} onChange={e=>setFd({...fd, saved_amount:e.target.value})} className="w-full border-2 border-gray-100 rounded-xl p-3 font-bold disabled:bg-gray-100 disabled:text-gray-400" /></div>
-             </div>
-             <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-xs font-bold text-gray-700 uppercase mb-2">Target Date*</label><input type="date" onBlur={calcPMT} required value={fd.target_date} onChange={e=>setFd({...fd, target_date:e.target.value})} className="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-indigo-500 font-bold" /></div>
-                <div><label className="block text-xs font-bold text-gray-700 uppercase mb-2">Monthly SIP (₹)</label><input type="number" value={fd.monthly_sip} onChange={e=>setFd({...fd, monthly_sip:e.target.value})} className="w-full border-2 border-indigo-100 focus:border-indigo-500 bg-indigo-50/30 rounded-xl p-3 outline-none font-black text-indigo-700" /></div>
-             </div>
-          </div>
-          <div className="p-5 border-t border-gray-100 bg-gray-50 flex gap-3">
-             <button onClick={onClose} className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-100">Cancel</button>
-             <button onClick={()=>onSave(fd)} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all">Save Goal</button>
-          </div>
-       </div>
-    </div>
-  );
-}
-
-// --- SIP CALCULATOR ENHANCED ---
-function SIPCalculator({ goals }) {
+// --- SIP HUD ENGINE ---
+function SIPHUD({ goals }) {
   const [tgt, setTgt] = useState(5000000);
   const [yrs, setYrs] = useState(10);
   const [rate, setRate] = useState(12);
@@ -454,54 +392,70 @@ function SIPCalculator({ goals }) {
   const r = (rate / 100) / 12;
   const n = yrs * 12;
   const sip = r===0 ? tgt/n : tgt / (((Math.pow(1+r, n) - 1) / r) * (1+r));
-  
   const invested = sip * n;
   const returns = tgt - invested;
 
   return (
-    <div className="border border-gray-200 shadow-xl rounded-3xl bg-white overflow-hidden flex flex-col h-full sticky top-6">
-       <div className="p-6 bg-gradient-to-br from-indigo-900 to-indigo-700 text-white relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
-          <h3 className="text-xl font-black flex items-center tracking-tight"><Presentation className="w-6 h-6 mr-2 opacity-80" /> SIP Projection Engine</h3>
-          <p className="text-indigo-200 text-sm mt-1.5 font-medium leading-relaxed">Calculate exact compound trajectories.</p>
+    <div className="border border-[#222] shadow-[0_0_30px_rgba(0,0,0,0.8)] bg-[#050505]/95 flex flex-col h-full sticky top-6 overflow-hidden backdrop-blur-xl">
+       {/* HUD Header */}
+       <div className="p-5 border-b border-[#222] relative overflow-hidden bg-[radial-gradient(ellipse_at_top_right,rgba(0,229,255,0.05),transparent)]">
+          <div className="absolute inset-0 opacity-[0.03]" style={{backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, #fff 2px, #fff 4px)'}}></div>
+          <h3 className="text-lg font-bebas tracking-[4px] text-[#00E5FF] flex items-center shadow-[0_0_10px_rgba(0,229,255,0)] group">
+             <Activity className="w-5 h-5 mr-3 opacity-80 group-hover:animate-spin text-[#ADFF2F]" /> FLIGHT COMPUTER
+          </h3>
+          <p className="text-[#888] font-mono text-[9px] tracking-widest mt-1 uppercase">SIP Projection Trajectory Engine</p>
        </div>
-       <div className="p-6 space-y-7 flex-1 flex flex-col">
+
+       <div className="p-6 flex-1 flex flex-col space-y-6">
           {goals.length > 0 && (
-             <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-2">
-                <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Quick Link to Goal Target</label>
-                <select onChange={handleLink} defaultValue="" className="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm font-bold text-gray-700 outline-none focus:border-indigo-500">
-                   <option value="" disabled>Select a goal...</option>
-                   {goals.map(g => <option key={g.id} value={g.id}>{g.name} (₹{formatInr(g.target_amount)})</option>)}
+             <div className="bg-[#111] p-3 border border-[#222] mb-2 relative group focus-within:border-[#00E5FF]/40 transition-colors">
+                <label className="text-[9px] font-mono uppercase text-[#00E5FF] mb-2 block tracking-widest">Connect Data Stream</label>
+                <select onChange={handleLink} defaultValue="" className="w-full bg-[#0a0a0a] border border-[#333] p-1.5 text-[11px] font-mono text-[#E0E0E0] outline-none">
+                   <option value="" disabled>-- SELECT NODE --</option>
+                   {goals.map(g => <option key={g.id} value={g.id}>{g.name} (TGT: {formatInr(g.target_amount)})</option>)}
                 </select>
              </div>
           )}
-          <div>
-            <label className="flex justify-between text-xs font-black uppercase text-gray-500 mb-2"><span>Target Corpus</span><span className="text-indigo-600">₹{formatInr(tgt)}</span></label>
-            <input type="range" min="10000" max="100000000" step="10000" value={tgt} onChange={e=>setTgt(e.target.value)} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
-          </div>
-          <div>
-            <label className="flex justify-between text-xs font-black uppercase text-gray-500 mb-2"><span>Time Horizon</span><span className="text-indigo-600">{yrs} Years</span></label>
-            <input type="range" min="1" max="30" step="1" value={yrs} onChange={e=>setYrs(e.target.value)} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
-          </div>
-          <div>
-            <label className="flex justify-between text-xs font-black uppercase text-gray-500 mb-2"><span>Expected Return</span><span className="text-indigo-600">{rate}% p.a.</span></label>
-            <input type="range" min="4" max="30" step="1" value={rate} onChange={e=>setRate(e.target.value)} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+
+          {/* HUD Levers */}
+          <div className="space-y-6">
+             {[{lbl:'CORPUS TGT', v:tgt, min:10000, max:100000000, step:10000, sx:'₹'+formatInr(tgt), set:setTgt, col:'accent-[#00E5FF]'},
+               {lbl:'TIME_HRZ', v:yrs, min:1, max:30, step:1, sx:yrs+' YRS', set:setYrs, col:'accent-[#ADFF2F]'},
+               {lbl:'RET_YIELD', v:rate, min:4, max:30, step:1, sx:rate+'% PA', set:setRate, col:'accent-[#FF4444]'}
+              ].map((inp, idx) => (
+                <div key={idx}>
+                   <div className="flex justify-between items-end mb-1.5 font-mono text-[10px] tracking-widest">
+                      <span className="text-[#888] uppercase">{inp.lbl}</span>
+                      <span className="text-[#E0E0E0] shadow-[0_0_5px_currentColor]" style={{color: inp.col.replace('accent-','').replace(/\]/,'').replace(/\[/,'')}}>{inp.sx}</span>
+                   </div>
+                   <input type="range" min={inp.min} max={inp.max} step={inp.step} value={inp.v} onChange={e=>inp.set(e.target.value)} className={`w-full h-1 bg-[#222] appearance-none cursor-crosshair ${inp.col} hover:h-2 transition-all`} />
+                </div>
+             ))}
           </div>
           
-          <div className="mt-auto border border-indigo-100 bg-indigo-50/50 rounded-2xl p-5 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-5"><Target className="w-24 h-24 text-indigo-900" /></div>
-             <p className="text-xs font-black uppercase text-indigo-800/60 mb-1">Required SIP Amount</p>
-             <p className="text-4xl font-black text-indigo-700 flex items-end tracking-tighter">₹{formatInr(Math.ceil(sip))}<span className="text-lg text-indigo-400 font-bold ml-1 mb-1 leading-none">/mo</span></p>
-             
-             <div className="mt-6 pt-4 border-t border-indigo-200/50 space-y-3">
-               <div className="w-full h-3 bg-indigo-100 rounded-full overflow-hidden flex">
-                 <div className="bg-indigo-400 h-full transition-all" style={{width:`${(invested/tgt)*100}%`}}></div>
-                 <div className="bg-emerald-400 h-full transition-all" style={{width:`${(returns/tgt)*100}%`}}></div>
-               </div>
-               <div className="flex justify-between text-xs font-black mt-2">
-                 <div className="flex items-center text-indigo-700"><div className="w-2 h-2 rounded-full bg-indigo-400 mr-2"></div> Invested: ₹{formatInr(invested)}</div>
-                 <div className="flex items-center text-emerald-700"><div className="w-2 h-2 rounded-full bg-emerald-400 mr-2"></div> Returns: ₹{formatInr(returns)}</div>
-               </div>
+          <div className="mt-auto pt-6">
+             <div className="border border-[#00E5FF]/30 bg-[#00E5FF]/5 p-5 relative overflow-hidden shadow-[inset_0_0_15px_rgba(0,229,255,0.05)] text-center">
+                <div className="absolute top-0 right-0 p-3 opacity-10"><Target className="w-16 h-16 text-[#00E5FF]" /></div>
+                <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-[#00E5FF] mb-2">Required Uplink (SIP)</p>
+                <p className="text-3xl font-mono font-black text-[#00E5FF] tracking-tight">₹<GlitchText text={formatInr(Math.ceil(sip))} glowColor="#00E5FF" /></p>
+                
+                {/* Segmented Power Core (Returns vs Invested) */}
+                <div className="mt-8 pt-4 border-t border-[#00E5FF]/20">
+                  <div className="flex w-full h-[6px] bg-[#111] overflow-hidden gap-[1px]">
+                     {[...Array(20)].map((_, i) => {
+                        const cellPct = (i / 20) * 100;
+                        const invPct = (invested / tgt) * 100;
+                        let colorClass = "bg-[#222]";
+                        if (cellPct < invPct) colorClass = "bg-[#00E5FF] shadow-[0_0_5px_#00E5FF]";
+                        else colorClass = "bg-[#ADFF2F] shadow-[0_0_5px_#ADFF2F]";
+                        return <div key={i} className={`flex-1 ${colorClass}`}></div>;
+                     })}
+                  </div>
+                  <div className="flex justify-between text-[9px] font-mono tracking-widest mt-3">
+                    <div className="flex items-center text-[#00E5FF]"><div className="w-1.5 h-1.5 border border-[#00E5FF] mr-2"></div> INV: ₹{formatInr(invested)}</div>
+                    <div className="flex items-center text-[#ADFF2F]"><div className="w-1.5 h-1.5 bg-[#ADFF2F] mr-2"></div> YLD: ₹{formatInr(returns)}</div>
+                  </div>
+                </div>
              </div>
           </div>
        </div>
@@ -509,43 +463,63 @@ function SIPCalculator({ goals }) {
   );
 }
 
-// --- TIMELINE PLOTTER ---
-function TimelinePlotter({ goals }) {
-   if(!goals.length) return null;
-   const sorted = [...goals].sort((a,b) => new Date(a.target_date)-new Date(b.target_date));
-   const firstDate = new Date();
-   const lastDate = new Date(sorted[sorted.length-1].target_date);
-   const totalSpan = Math.max(1, lastDate - firstDate);
-
-   return (
-     <div className="relative w-full h-20 pt-10 pb-4 px-4 overflow-hidden -mt-4">
-        {/* The Track */}
-        <div className="absolute top-10 left-4 right-4 h-1.5 bg-gray-200 rounded-full"></div>
-        {/* Today Marker */}
-        <div className="absolute top-8 left-4 flex flex-col items-center group z-10">
-           <div className="text-[9px] font-black uppercase text-indigo-600 bg-indigo-50 px-1.5 rounded border border-indigo-200 mb-1 whitespace-nowrap">Today</div>
-           <div className="w-2 h-4 bg-indigo-500 rounded-sm shadow-sm z-10"></div>
-        </div>
-        {/* Goal Markers */}
-        {sorted.map(g => {
-           const d = new Date(g.target_date);
-           let pct = ((d - firstDate) / totalSpan) * 100;
-           pct = Math.min(99, Math.max(5, pct)); // bound mapping tightly
-           
-           const isOnTrack = (Number(g.monthly_sip) * Math.max(1,(d-firstDate)/(1000*60*60*24*30))) >= (Number(g.target_amount) - Number(g.saved_amount))*0.9;
-           
-           return (
-             <div key={g.id} className="absolute top-8 flex flex-col items-center group transform -translate-x-1/2 cursor-pointer z-10" style={{ left: `calc(1rem + ${pct} * (100% - 2rem) / 100)` }}>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full mb-1 text-center pointer-events-none">
-                   <div className="text-[10px] font-black text-gray-800 bg-white px-2 py-1 rounded-md shadow-lg border border-gray-100 whitespace-nowrap">
-                     {g.name}
-                     <div className="text-gray-400 font-bold">{d.toLocaleString('default',{month:'short',year:'2-digit'})}</div>
-                   </div>
-                </div>
-                <div className={cn("w-3 h-3 rounded-full border-2 border-white shadow-md z-10 transition-transform group-hover:scale-125", isOnTrack ? "bg-emerald-500" : "bg-rose-500")}></div>
+// --- CONTRIBUTION MODAL ---
+function ContributionModal({ goal, onClose, onConfirm }) {
+  const [val, setVal] = useState(goal.monthly_sip || 5000);
+  const presets = [1000, 5000, 10000, 25000];
+  
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#000]/80 backdrop-blur-md p-4 animate-fade-in font-mono">
+       <div className="bg-[#050505] border border-[#00E5FF]/40 w-full max-w-sm shadow-[0_0_30px_rgba(0,229,255,0.1)] relative">
+          <div className="p-5 border-b border-[#222]"><h3 className="text-sm tracking-widest text-[#00E5FF]">INITIATE_UPLINK</h3></div>
+          <div className="p-5">
+             <p className="text-[10px] text-[#888] mb-4 uppercase tracking-widest">Routing funds to {goal.name}</p>
+             <div className="flex flex-wrap gap-2 mb-6">
+                {presets.map(p => (
+                   <button key={p} onClick={()=>setVal(p)} className={cn("px-3 py-1.5 text-[10px] tracking-widest border transition-all", val === p ? "bg-[#00E5FF]/20 text-[#00E5FF] border-[#00E5FF]" : "bg-[#111] text-[#888] border-[#333] hover:border-[#555]")}>
+                     ₹{formatInr(p)}
+                   </button>
+                ))}
              </div>
-           );
-        })}
-     </div>
-   );
+             <input type="number" min="1" value={val} onChange={e=>setVal(e.target.value)} className="w-full text-xl bg-[#111] border border-[#333] text-[#00E5FF] p-3 outline-none focus:border-[#00E5FF]/50 transition-colors mb-6 text-center" />
+             <div className="flex gap-2">
+                <button onClick={onClose} className="flex-1 py-3 bg-[#111] text-[#888] text-[10px] tracking-widest uppercase hover:bg-[#222]">Abort</button>
+                <button onClick={()=>onConfirm(val)} disabled={!val || Number(val)<=0} className="flex-1 py-3 bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/40 text-[10px] tracking-widest uppercase hover:bg-[#00E5FF]/20 disabled:opacity-50">Transmit</button>
+             </div>
+          </div>
+       </div>
+    </div>
+  );
+}
+
+// --- EDITOR MODAL ---
+function GoalEditorModal({ goal, onClose, onSave }) {
+  const [fd, setFd] = useState({
+     name: goal?.name || '', category: goal?.category || 'Travel',
+     target_amount: goal?.target_amount || '', saved_amount: goal?.saved_amount || 0,
+     target_date: goal ? goal.target_date.split('T')[0] : '', monthly_sip: goal?.monthly_sip || ''
+  });
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#000]/80 backdrop-blur-md p-4 animate-fade-in font-mono">
+       <div className="bg-[#050505] border border-[#00E5FF]/40 w-full max-w-lg shadow-[0_0_30px_rgba(0,229,255,0.1)] relative max-h-[90vh] flex flex-col">
+          <div className="p-5 border-b border-[#222]"><h3 className="text-sm tracking-widest text-[#00E5FF]">{goal ? 'EDIT_NODE_PARAMS' : 'ALLOCATE_NEW_NODE'}</h3></div>
+          <div className="p-5 overflow-y-auto space-y-4">
+             <div><label className="text-[9px] text-[#888] uppercase tracking-widest mb-1 block">IDENTIFIER</label><input required value={fd.name} onChange={e=>setFd({...fd, name:e.target.value})} className="w-full bg-[#111] border border-[#333] text-[#E0E0E0] p-2 outline-none focus:border-[#00E5FF]/50 text-xs" /></div>
+             <div><label className="text-[9px] text-[#888] uppercase tracking-widest mb-1 block">CLASS</label><select value={fd.category} onChange={e=>setFd({...fd, category:e.target.value})} className="w-full bg-[#111] border border-[#333] text-[#E0E0E0] p-2 outline-none focus:border-[#00E5FF]/50 text-xs">{Object.keys(CAT_ICONS).map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+             <div className="grid grid-cols-2 gap-4">
+                <div><label className="text-[9px] text-[#888] uppercase tracking-widest mb-1 block">TGT_VOLUME</label><input type="number" required value={fd.target_amount} onChange={e=>setFd({...fd, target_amount:e.target.value})} className="w-full bg-[#111] border border-[#333] text-[#00E5FF] p-2 outline-none focus:border-[#00E5FF]/50 text-xs" /></div>
+                <div><label className="text-[9px] text-[#888] uppercase tracking-widest mb-1 block">CURRENT_VOL</label><input type="number" disabled={!!goal} value={fd.saved_amount} onChange={e=>setFd({...fd, saved_amount:e.target.value})} className="w-full bg-[#0a0a0a] border border-[#222] text-[#666] p-2 outline-none text-xs" /></div>
+             </div>
+             <div className="grid grid-cols-2 gap-4">
+                <div><label className="text-[9px] text-[#888] uppercase tracking-widest mb-1 block">TGT_DATE</label><input type="date" required value={fd.target_date} onChange={e=>setFd({...fd, target_date:e.target.value})} className="w-full bg-[#111] border border-[#333] text-[#E0E0E0] p-2 outline-none focus:border-[#00E5FF]/50 text-xs" /></div>
+                <div><label className="text-[9px] text-[#888] uppercase tracking-widest mb-1 block">RQR_UPLINK/MO</label><input type="number" value={fd.monthly_sip} onChange={e=>setFd({...fd, monthly_sip:e.target.value})} className="w-full bg-[#00E5FF]/10 border border-[#00E5FF]/30 text-[#ADFF2F] p-2 outline-none focus:border-[#00E5FF] text-xs" /></div>
+             </div>
+          </div>
+          <div className="p-4 border-t border-[#222] flex gap-2">
+             <button onClick={onClose} className="flex-1 py-3 bg-[#111] text-[#888] text-[10px] tracking-widest uppercase hover:bg-[#222]">Abort</button>
+             <button onClick={()=>onSave(fd)} className="flex-1 py-3 bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/40 text-[10px] tracking-widest uppercase hover:bg-[#00E5FF]/20">Commit</button>
+          </div>
+       </div>
+    </div>
+  );
 }
