@@ -29,7 +29,7 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 // Example for Express
 app.use(cors({
-  origin: "https://your-frontend-url.vercel.app"
+  origin: "https://wealthosweb.vercel.app/"
 }));
 app.use(helmet());
 app.use(morgan('dev'));
