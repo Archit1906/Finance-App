@@ -15,14 +15,10 @@ export default function Dashboard() {
     }
   });
 
-  const netWorth = summary?.netWorth || 0;
-  const income = summary?.thisMonthIncome || 0;
-  const expense = summary?.thisMonthExpense || 0;
-  
-  // Basic Health Score logic recreating original Dashboard
-  const savings = income - expense;
-  const healthRaw = income > 0 ? (savings / income) * 100 : (expense > 0 ? -10 : 0);
-  const healthScore = Math.max(0, Math.min(100, healthRaw + 50)); 
+  const income = summary?.income || 0;
+  const expense = summary?.expense || 0;
+  const savings = summary?.savings || 0;
+  const savingsRate = summary?.savingsRate || 0;
 
   return (
     <div className="space-y-6 animate-fade-in pb-10 max-w-7xl mx-auto px-4 mt-6">
@@ -39,10 +35,10 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-cotes-de-geneve p-6 rounded-2xl plate-border shadow-plate relative z-10">
         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[rgba(255,255,255,0.02)] to-black/60 pointer-events-none rounded-2xl"></div>
 
-        {/* Live Net Worth Complication */}
+        {/* Live Net Savings Complication */}
         <div className="bg-[#0a0a0a] p-5 rounded-xl border border-[#333] shadow-recessed relative overflow-hidden flex flex-col justify-between">
           <div className="flex justify-between items-start">
-            <h3 className="text-[#666] text-[10px] font-mono font-bold uppercase tracking-[0.2em] relative z-10">Live Net Worth</h3>
+            <h3 className="text-[#666] text-[10px] font-mono font-bold uppercase tracking-[0.2em] relative z-10">Net Savings</h3>
             
             {/* Animated Gear System */}
             <div className="relative w-8 h-8 flex items-center justify-center shrink-0">
@@ -57,7 +53,7 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="text-2xl font-mono font-black text-engraved-gold mt-1 tracking-tight z-10">
-            ₹{(netWorth || 0).toLocaleString('en-IN')}
+            ₹{savings.toLocaleString('en-IN')}
           </p>
         </div>
         
@@ -68,7 +64,7 @@ export default function Dashboard() {
           </div>
           <h3 className="text-[#666] text-[10px] font-mono font-bold uppercase tracking-[0.2em] relative z-10">Monthly Income</h3>
           <p className="text-2xl font-mono font-black text-[#00C853] mt-1 tracking-tight drop-shadow-[0_0_8px_rgba(0,200,83,0.3)] relative z-10">
-            ₹{(income || 0).toLocaleString('en-IN')}
+            ₹{income.toLocaleString('en-IN')}
           </p>
         </div>
         
@@ -79,11 +75,11 @@ export default function Dashboard() {
           </div>
           <h3 className="text-[#666] text-[10px] font-mono font-bold uppercase tracking-[0.2em] relative z-10">Monthly Expense</h3>
           <p className="text-2xl font-mono font-black text-[var(--color-enamel-red)] mt-1 tracking-tight drop-shadow-[0_0_8px_rgba(139,0,0,0.3)] relative z-10">
-            ₹{(expense || 0).toLocaleString('en-IN')}
+            ₹{expense.toLocaleString('en-IN')}
           </p>
         </div>
 
-        {/* Health Score Tourbillon */}
+        {/* Savings Rate Tourbillon */}
         <div className="bg-[#0a0a0a] p-5 rounded-xl border border-[#333] shadow-recessed relative overflow-hidden flex flex-col justify-between items-end text-right">
            <div className="flex justify-between w-full items-start">
              {/* Gravity Defying Tourbillon Gauge */}
@@ -91,11 +87,11 @@ export default function Dashboard() {
                 <div className="absolute inset-2 border border-[var(--color-champagne-gold)] rounded-full opacity-30 shadow-[inset_0_0_3px_#D4AF37]"></div>
                 <div className="w-1 h-6 bg-[var(--color-champagne-gold)] rounded-full animate-tourbillon-tick shadow-[0_0_5px_rgba(212,175,55,0.8)]"></div>
              </div>
-             <h3 className="text-[#666] text-[10px] font-mono font-bold uppercase tracking-[0.2em]">Node Health</h3>
+             <h3 className="text-[#666] text-[10px] font-mono font-bold uppercase tracking-[0.2em]">Savings Rate</h3>
            </div>
            <div>
-             <p className="text-xl font-mono font-black text-engraved-gold tracking-widest">{healthScore.toFixed(0)} / 100</p>
-             <p className="text-[#888] text-[9px] font-mono font-bold uppercase tracking-[0.2em]">{healthScore > 60 ? 'OPTIMAL' : 'DEGRADED'}</p>
+             <p className="text-xl font-mono font-black text-engraved-gold tracking-widest">{Number(savingsRate).toFixed(1)}%</p>
+             <p className="text-[#888] text-[9px] font-mono font-bold uppercase tracking-[0.2em]">{Number(savingsRate) > 20 ? 'OPTIMAL' : 'DEGRADED'}</p>
            </div>
         </div>
 

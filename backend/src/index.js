@@ -27,10 +27,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
-// Example for Express
-app.use(cors({
-  origin: "https://wealthosweb.vercel.app/"
-}));
+app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(rateLimiter(150)); // Global API Rate Limit
