@@ -43,7 +43,7 @@ export default function Coach() {
   }, [messages, chatMutation.isPending]);
 
   return (
-    <div className="space-y-6 flex flex-col h-[calc(100vh-8rem)] animate-fade-in pb-10 max-w-7xl mx-auto px-4 mt-6">
+    <div className="space-y-4 flex flex-col h-[calc(100dvh-4.5rem)] lg:h-[calc(100vh-2rem)] animate-fade-in pb-4 pt-4 max-w-7xl mx-auto px-4 w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
         <div>
            <h1 className="text-[28px] font-bebas tracking-[4px] text-engraved-gold flex items-center shadow-gold-text">
