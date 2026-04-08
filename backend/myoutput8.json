@@ -4,28 +4,27 @@
       "content": {
         "parts": [
           {
-            "text": "To maximize your ₹1.5 lakh deduction under Section",
-            "thoughtSignature": "EpsICpgIAb4+9vu8i8TCtmO7UNWSaam56NLtX8MC/67ec9ou/YjSzZKU3JM71G//c7XMgL+65/PcoPLHxyu0jcHUbR+qu7ndtZSyYOfvbR0r6+/qF4wNrgxMuSFGVvr+hJuEhyEATb6vgXqU6jokXFzVHz2i28FUmrn2VYeUg+IkMfjrhCuILMazA2MEX8z8HLJhl8/9ntVZkG5WAUuLvp6HTeSx1UVa4u2ibIew2MqEfV+NPfYLfEQiSCZfZMI1HIJWBi0F8k0lKBP+uckxN0CmWkOrB+OB8S77+6Sscz00MghG5j7wj8z7i/TrvmMSk5N+g1C2ph0hs+xqM+vUN0LfTLh/k6IjUU3v/jMF75eVUz4jlCoL+uHxFxTOrqgiBMrLA9L3JdsGP+hWRKxUGagCYgP8dTaEjmzrD+DoC/OtJKIt2B3COnn7x+fCQgea8qJxDW/7exgTQmOEE/sgEkUtF2nEc04ysqbfX88y0UZ5+E4v8QJh3H9BR0OdrdbZvpSucOhPxgLNalrGxQmE+IaYF879g8d6kR3EMVdzZO14xAhPWjOf2msePFTX95qwCX0TFY2tt7Em4N0lHSO/e09HkEtRa0r2n5NJOk5HP9GGhviFLmJz2xWSgoRNL0pYpUQ3Lt87ULUK+Kqdvb13EtXiTy2ThfnA1HjyaN9hsY63PnkxJi7opIWuzp3QRk82zL1yL9Kj90M0PYW0QaVMuejvBFRkMv/Bgkih3SG8FYqULvYUq3w4C7DayLJzKF1+S0gWvi9GVkl0WpyIFKUkP8aD+ZpowuLC51vuqDUv04I3CqXKyvn4W7E8MDFLcLGw0JgGu9e4cUwrBM4U9YSphtoWTkYSZY+fOlH78NZX+eEtgfYyCbRXQzER+XxVKbarRyapL1ZwMxXtgKUp5jIcKza6LkAe+FreMpZn2uyf1FMvW0TU5DTYmk4t5d4CBos8IlN2qfTWMe/n5cfZDyA7dEXtuYL9oppqO4o9G88Yfm0V41SdbAceDv50K4hSuByc8QqI/InR3F9WveKNFDy5h5fG0z4n8M8jauWe1AbbLXNvxy9cpqJcM5g5XSv6EWXV3eeWmre1O2AyRjNdcJ12BPBUQl5/oixAaO+mcU6qW3c89zby6smGhrT/YYXHuGRq8ibjgDLE+B8wOYCOQ5rSJoRqHirJiU++sujBOWpchehdyzebudRvm6jb/ZjU7JJgjj/tQ2u60S2O+TWJnK3uTi/5Karkz5Mn9/xWZ9kFeg4/OzF5LFsx0+TtehGo+8W079gNi0daBrp3eE2cYBrm4R509ZDI1AHRs8GHWhmG2Khb+ZDRQVJ3MahqvcHLbHV8qfQ+x7OvC4uxDjjbPoC15iDORs/4RMIx1h2WWf2ylu8rwrZw8HyEID5HkaNpGA=="
+            "text": "Great question! The 50/30/20 rule is a simple yet powerful budgeting guideline to manage your finances effectively.\n\n*   **50%** of your after-tax income goes towards \"needs\" (housing, utilities, groceries, transportation).\n*   **30%** is allocated to \"wants\" (dining out, entertainment, hobbies).\n*   **20%** is dedicated to \"savings & debt repayment\" (emergency fund, retirement, credit card debt).\n\nIt's a fantastic framework to ensure you're prioritizing your financial future while still enjoying life. Start implementing it today!"
           }
         ],
         "role": "model"
       },
-      "finishReason": "MAX_TOKENS",
+      "finishReason": "STOP",
       "index": 0
     }
   ],
   "usageMetadata": {
-    "promptTokenCount": 56,
-    "candidatesTokenCount": 11,
-    "totalTokenCount": 352,
+    "promptTokenCount": 100,
+    "candidatesTokenCount": 131,
+    "totalTokenCount": 361,
     "promptTokensDetails": [
       {
         "modality": "TEXT",
-        "tokenCount": 56
+        "tokenCount": 100
       }
     ],
-    "thoughtsTokenCount": 285
+    "thoughtsTokenCount": 130
   },
-  "modelVersion": "gemini-3-flash-preview",
-  "responseId": "7O7VaciAItzaqfkPrvjL-Q8"
+  "modelVersion": "gemini-2.5-flash",
+  "responseId": "HfXVaeXdJO78juMPpLKYMQ"
 }
