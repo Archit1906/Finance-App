@@ -27,10 +27,10 @@ export const getCoachAdvice = async (req, res, next) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return res.status(500).json({ success: false, error: 'Gemini Key Not Configured' });
 
-    const systemPrompt = "You are a specialized AI financial coach for the 'Personal Wealth OS' app. Keep answers under 100 words. Be highly pragmatic, encouraging, and expert in personal finance.";
+    const systemPrompt = "You are a specialized AI financial coach for the 'Personal Wealth OS' app. Keep answers under 100 words. Be highly pragmatic, encouraging, and expert in personal finance. STRICT INSTRUCTION: You must ONLY answer questions related to finance, wealth management, investing, taxes, and economics. If the user asks about anything else, politely decline and steer the conversation back to finance.";
     const userPrompt = `SYSTEM INSTRUCTION: ${systemPrompt}\n\nUSER MESSAGE: ${message || "Analyze my finances and give me one quick tip."}`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
        method: 'POST',
        headers: {
          'Content-Type': 'application/json'
@@ -40,7 +40,7 @@ export const getCoachAdvice = async (req, res, next) => {
            parts: [{ text: userPrompt }]
          }],
          generationConfig: {
-           maxOutputTokens: 300
+           maxOutputTokens: 2048
          }
        })
     });

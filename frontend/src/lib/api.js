@@ -6,7 +6,7 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken');
-  if (token) {
+  if (token && token !== 'undefined' && token !== 'null') {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -20,7 +20,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) throw new Error('No refresh token');
+        if (!refreshToken || refreshToken === 'undefined' || refreshToken === 'null') throw new Error('No refresh token');
 
         const { data } = await axios.post(`${api.defaults.baseURL}/auth/refresh`, { refreshToken });
         

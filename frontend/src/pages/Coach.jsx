@@ -43,57 +43,59 @@ export default function Coach() {
   }, [messages, chatMutation.isPending]);
 
   return (
-    <div className="space-y-6 flex flex-col h-[calc(100vh-8rem)] animate-fade-in pb-10">
+    <div className="space-y-6 flex flex-col h-[calc(100vh-8rem)] animate-fade-in pb-10 max-w-7xl mx-auto px-4 mt-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
         <div>
-           <h1 className="text-4xl font-bebas tracking-[2px] text-ignite-white flex items-center">
-             AI Wealth Coach <Bot className="w-8 h-8 ml-3 text-ignite-red drop-shadow-[0_0_8px_rgba(204,0,0,0.5)] bg-ignite-card p-1 border border-ignite-border rounded-lg" />
+           <h1 className="text-[28px] font-bebas tracking-[4px] text-engraved-gold flex items-center shadow-gold-text">
+             AI WEALTH COACH <Bot className="w-6 h-6 ml-3 text-[var(--color-champagne-gold)] opacity-80" />
            </h1>
-           <p className="text-ignite-muted font-bold mt-1 text-sm uppercase tracking-widest">Real-time deep learning insight engine</p>
+           <p className="text-[#888] font-mono text-[10px] tracking-[0.2em] uppercase mt-1">Real-time deep learning insight engine</p>
         </div>
 
-        {/* Gamification Strip */}
-        <div className="flex items-center gap-4 bg-ignite-card px-5 py-3 rounded-2xl shadow-ignite-card border border-ignite-border">
-           <div className="flex items-center text-sm font-black text-ignite-alert">
-              <Flame className="w-5 h-5 mr-1" />
-              {gamification?.currentStreak || 0} WEEK STREAK
+        {/* Gamification Strip - Horology Style */}
+        <div className="flex items-center gap-4 bg-pvd-plate px-5 py-3 rounded-xl plate-border shadow-plate">
+           <div className="flex items-center text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-[#00C853] drop-shadow-[0_0_8px_rgba(0,200,83,0.3)]">
+              <Flame className="w-4 h-4 mr-1.5" />
+              {gamification?.currentStreak || 0} Week Streak
            </div>
-           <div className="w-px h-6 bg-ignite-border"></div>
-           <div className="flex items-center text-sm font-black text-ignite-warning drop-shadow-[0_0_8px_rgba(255,179,0,0.3)]">
-              <Trophy className="w-5 h-5 mr-1" />
+           <div className="w-px h-5 bg-[#333]"></div>
+           <div className="flex items-center text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-engraved-gold">
+              <Trophy className="w-4 h-4 mr-1.5" />
               {gamification?.badge || 'OPERATOR'}
            </div>
         </div>
       </div>
 
-      <div className="flex-1 bg-ignite-bg border border-ignite-border rounded-2xl shadow-ignite-card flex flex-col overflow-hidden">
+      <div className="flex-1 bg-cotes-de-geneve plate-border shadow-plate rounded-2xl flex flex-col overflow-hidden relative z-10">
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-[rgba(255,255,255,0.02)] to-black/60 pointer-events-none rounded-2xl"></div>
+
         {/* Chat window */}
-        <div className="flex-1 p-6 overflow-y-auto space-y-6 bg-ignite-bg/50 scrollbar-thin scrollbar-thumb-ignite-border scrollbar-track-transparent">
+        <div className="flex-1 p-6 overflow-y-auto space-y-6 bg-[#050505]/80 scrollbar-thin scrollbar-thumb-[#333] scrollbar-track-transparent shadow-recessed relative z-10">
           {messages.map((m) => (
             <div key={m.id} className={cn("flex items-start max-w-[85%]", m.role === 'user' ? "ml-auto flex-row-reverse" : "")}>
               <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-md border",
-                m.role === 'user' ? "bg-ignite-red border-ignite-red text-ignite-white ml-4 shadow-ignite-card" : "bg-ignite-card border-ignite-border text-ignite-red mr-4 shadow-sm"
+                "w-10 h-10 rounded-full flex items-center justify-center shrink-0 border",
+                m.role === 'user' ? "bg-[#111] border-[var(--color-champagne-gold)] text-[var(--color-champagne-gold)] ml-4 shadow-[0_0_8px_rgba(212,175,55,0.3)]" : "bg-[#0a0a0a] border-[#444] text-[#888] mr-4 shadow-sm"
               )}>
                 {m.role === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
               </div>
               <div className={cn(
-                "px-5 py-4 rounded-3xl text-[15px] font-medium leading-relaxed shadow-sm",
-                m.role === 'user' ? "bg-ignite-red text-ignite-white rounded-tr-none shadow-ignite-card" : "bg-ignite-card border border-ignite-border text-ignite-white rounded-tl-none shadow-md"
+                "px-5 py-4 rounded-xl text-[14px] font-mono leading-relaxed tracking-wide",
+                m.role === 'user' ? "bg-[#161208] border border-[rgba(212,175,55,0.3)] text-white shadow-sm" : "bg-[#111] border border-[#333] text-[#ddd] shadow-sm"
               )}>
                 {m.content}
               </div>
             </div>
           ))}
           {chatMutation.isPending && (
-             <div className="flex items-center max-w-[85%] animate-fade-in">
-               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-ignite-card border border-ignite-border text-ignite-red mr-4 shadow-sm">
-                 <Bot className="w-5 h-5" />
+             <div className="flex items-center max-w-[85%] animate-fade-in relative z-10">
+               <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-[#0a0a0a] border border-[#444] text-[var(--color-champagne-gold)] mr-4 shadow-[0_0_8px_rgba(212,175,55,0.2)]">
+                 <Bot className="w-5 h-5 animate-pulse" />
                </div>
-               <div className="px-5 py-4 bg-ignite-card border border-ignite-border rounded-3xl rounded-tl-none shadow-md flex items-center space-x-2">
-                 <div className="w-2.5 h-2.5 bg-ignite-red rounded-full animate-pulse shadow-[0_0_5px_rgba(204,0,0,0.8)]"></div>
-                 <div className="w-2.5 h-2.5 bg-ignite-red rounded-full animate-pulse shadow-[0_0_5px_rgba(204,0,0,0.8)]" style={{ animationDelay: '200ms' }}></div>
-                 <div className="w-2.5 h-2.5 bg-ignite-red rounded-full animate-pulse shadow-[0_0_5px_rgba(204,0,0,0.8)]" style={{ animationDelay: '400ms' }}></div>
+               <div className="px-5 py-4 bg-[#111] border border-[#333] rounded-xl flex items-center space-x-2">
+                 <div className="w-2 h-2 bg-[var(--color-champagne-gold)] rounded-full animate-pulse opacity-50"></div>
+                 <div className="w-2 h-2 bg-[var(--color-champagne-gold)] rounded-full animate-pulse" style={{ animationDelay: '200ms' }}></div>
+                 <div className="w-2 h-2 bg-[var(--color-champagne-gold)] rounded-full animate-pulse opacity-50" style={{ animationDelay: '400ms' }}></div>
                </div>
              </div>
           )}
@@ -102,9 +104,9 @@ export default function Coach() {
 
         {/* Quick Suggestion Chips */}
         {messages.length < 3 && !chatMutation.isPending && (
-           <div className="bg-ignite-bg px-6 py-2 flex gap-2 overflow-x-auto border-t border-ignite-border/30">
+           <div className="bg-[#0a0a0a] px-6 py-3 flex gap-3 overflow-x-auto border-t border-[#333] relative z-20">
               {['Analyze my spending this month', 'What is the 50/30/20 rule?', 'How do I save on 80C taxes?'].map(txt => (
-                 <button key={txt} onClick={()=>setInput(txt)} className="text-xs font-bold text-ignite-red border border-ignite-red px-4 py-2 rounded-xl whitespace-nowrap hover:bg-ignite-red hover:text-white transition-colors shadow-[0_0_10px_rgba(204,0,0,0.1)]">
+                 <button key={txt} onClick={()=>setInput(txt)} className="text-[10px] font-mono font-bold tracking-widest text-[#aaa] border border-[#444] px-4 py-2 rounded uppercase whitespace-nowrap hover:bg-[#111] hover:text-[var(--color-champagne-gold)] hover:border-[var(--color-champagne-gold)] transition-colors shadow-recessed focus:outline-none">
                     {txt}
                  </button>
               ))}
@@ -112,25 +114,26 @@ export default function Coach() {
         )}
 
         {/* Input box */}
-        <div className="p-5 border-t border-ignite-border bg-ignite-card">
-          <form onSubmit={handleSend} className="flex gap-4">
+        <div className="p-4 bg-[#0d0d0d] border-t border-[#333] relative z-20 flex flex-col">
+          <form onSubmit={handleSend} className="flex gap-3">
             <input 
               type="text" 
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Query the system or request financial heuristics..."
-              className="flex-1 bg-ignite-side border border-ignite-border text-ignite-white text-[15px] font-medium rounded-2xl focus:shadow-ignite-focus focus:border-ignite-red block px-5 py-4 outline-none transition-all placeholder-[#6B5555]"
+              placeholder="Awaiting directive..."
+              className="flex-1 bg-[#111] border border-[#333] text-white text-[14px] font-mono rounded focus:border-[var(--color-champagne-gold)] focus:shadow-[0_0_5px_rgba(212,175,55,0.3)] block px-4 py-3 outline-none transition-all placeholder-[#555] shadow-recessed uppercase"
             />
             <button 
               type="submit" 
               disabled={chatMutation.isPending || !input.trim()}
-              className="px-6 py-4 bg-ignite-red text-ignite-white rounded-2xl shadow-ignite-card hover:bg-ignite-hover hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center font-bold"
+              className="px-6 py-3 bg-[#0a0a0a] text-engraved-gold border border-[rgba(212,175,55,0.5)] rounded hover:bg-[#1a1608] hover:border-[var(--color-champagne-gold)] transition-all disabled:opacity-40 shadow-[0_0_10px_rgba(212,175,55,0.1)] hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] flex items-center justify-center font-mono font-bold tracking-[0.2em] text-[11px]"
             >
-              <Send className="w-6 h-6 mr-2" /> SEND
+              <Send className="w-4 h-4 mr-2" /> EXECUTE
             </button>
           </form>
         </div>
       </div>
     </div>
   );
+
 }
