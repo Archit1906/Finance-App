@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: 'Outfit', sans-serif;
   --font-bebas: '"Bebas Neue"', sans-serif;
   --font-mono: '"JetBrains Mono"', monospace;
 
@@ -22,8 +22,8 @@
 
 @layer base {
   body {
-    @apply antialiased text-[#e0e0e0] bg-[#0a0a0a];
-    font-family: 'Inter', sans-serif;
+    @apply antialiased text-[#e0e0e0] bg-[#0a0a0a] text-[17px];
+    font-family: 'Outfit', sans-serif;
   }
 }
 
@@ -100,6 +100,16 @@
 
 .animate-gear-spin {
   animation: gear-spin 8s linear infinite;
+}
+
+@keyframes float-up {
+  0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+  20% { opacity: 0.8; }
+  80% { opacity: 0.8; }
+  100% { transform: translateY(-20vh) scale(1.5); opacity: 0; }
+}
+.animate-float-up {
+  animation: float-up 10s linear infinite;
 }
 
 @keyframes tourbillon-tick {

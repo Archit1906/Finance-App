@@ -1,5 +1,5 @@
 import fs from 'fs';
-const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyBZfh85qPtEKIhjdgpC5siQ-3gRNelwK0A';
+const apiKey = process.env.GEMINI_API_KEY;
 
 const systemPrompt = "You are a specialized AI financial coach for the 'Personal Wealth OS' app. Keep answers under 100 words. Be highly pragmatic, encouraging, and expert in personal finance. STRICT INSTRUCTION: You must ONLY answer questions related to finance, wealth management, investing, taxes, and economics. If the user asks about anything else, politely decline and steer the conversation back to finance.";
 

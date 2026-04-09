@@ -1,8 +1,10 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { Compass, Activity } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Compass, Activity, Target, ChevronRight } from 'lucide-react';
 import DashboardCharts from '../components/DashboardCharts';
+import RecentTransactions from '../components/RecentTransactions';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -100,8 +102,73 @@ export default function Dashboard() {
       {isLoading ? (
         <div className="h-40 flex items-center justify-center"><div className="w-8 h-8 rounded-full border-2 border-transparent border-t-[var(--color-champagne-gold)] animate-spin"></div></div>
       ) : (
-        <DashboardCharts />
+        <>
+          <DashboardCharts />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <RecentTransactions />
+            <ActiveDirectives />
+          </div>
+        </>
       )}
+    </div>
+  );
+}
+
+function ActiveDirectives() {
+  const { data: goals, isLoading } = useQuery({
+    queryKey: ['goals'],
+    queryFn: async () => {
+      const { data } = await api.get('/goals');
+      return data.data?.filter(g => g.status === 'active').slice(0, 3) || [];
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="bg-[#0a0a0a] rounded-2xl border border-[#333] shadow-plate relative overflow-hidden flex flex-col mt-6 p-6 justify-center items-center min-h-[220px]">
+        <div className="w-8 h-8 rounded-full border-2 border-transparent border-t-[var(--color-champagne-gold)] animate-spin"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#0a0a0a] rounded-2xl border border-[#333] shadow-plate relative overflow-hidden flex flex-col group mt-6 p-6 justify-between min-h-[220px]">
+      <div className="absolute inset-0 bg-cotes-de-geneve opacity-20 pointer-events-none"></div>
+      <div className="relative z-10 w-full flex-1">
+        <h3 className="text-[12px] font-mono font-bold text-[#888] uppercase tracking-widest flex items-center mb-6">
+          <Target className="w-4 h-4 mr-2 text-[#D4AF37]" />
+          ACTIVE DIRECTIVES
+        </h3>
+        
+        {goals?.length === 0 ? (
+           <div className="text-center py-6 text-[#555] text-[10px] font-mono uppercase tracking-widest">No active directives found</div>
+        ) : (
+          <div className="space-y-5">
+            {goals.map(goal => {
+              const pct = Math.min((goal.saved_amount / goal.target_amount) * 100, 100);
+              return (
+                <div key={goal.id} className="group/goal cursor-pointer">
+                  <div className="flex justify-between items-end mb-2">
+                    <span className="text-[11px] font-mono text-[#e0e0e0] tracking-[0.1em] uppercase truncate max-w-[60%] group-hover/goal:text-white transition-colors">{goal.name}</span>
+                    <span className="text-[10px] font-mono text-engraved-gold tracking-widest">
+                      {pct.toFixed(1)}% <span className="text-[#555]">/ ₹{(goal.target_amount/1000).toFixed(0)}K</span>
+                    </span>
+                  </div>
+                  <div className="w-full bg-[#111] h-1.5 rounded-[1px] overflow-hidden border border-[#222] shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)]">
+                    <div className="h-full bg-[#D4AF37] opacity-80 shadow-[0_0_8px_#D4AF37] transition-all duration-1000" style={{ width: `${pct}%` }}></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <div className="flex justify-between items-end relative z-10 mt-6 pt-4 border-t border-[#222]">
+        <Link to="/goals" className="text-[9px] font-mono text-[#666] hover:text-[#D4AF37] uppercase tracking-widest transition-colors flex items-center">
+          VIEW ALL MODULES <ChevronRight className="w-3 h-3 ml-1" />
+        </Link>
+        <span className="text-[9px] font-mono text-[#666] uppercase tracking-widest">CAPITAL DEPLOYMENT</span>
+      </div>
     </div>
   );
 }

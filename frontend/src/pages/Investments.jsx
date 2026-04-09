@@ -191,7 +191,7 @@ export default function Investments() {
         {/* PNL Gold Tag */}
         <div className="bg-sunray p-4 rounded-xl border border-[var(--color-champagne-gold)] shadow-[inset_0_0_20px_rgba(0,0,0,0.9),0_4px_10px_rgba(0,0,0,0.9)] relative overflow-hidden flex flex-col justify-center items-center text-center group">
             <h3 className="text-[#888] text-[9px] font-mono font-bold uppercase tracking-[0.2em] mb-2 pointer-events-none drop-shadow-[0_1px_1px_#000]">Total Matrix PNL</h3>
-            <p className="text-[12px] font-mono font-black text-[#111] tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)] bg-[var(--color-champagne-gold)] bg-sunray px-3 py-1.5 border border-[#000] shadow-recessed mx-auto">
+            <p className="text-[12px] font-mono font-black text-white tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)] bg-[var(--color-champagne-gold)] bg-sunray px-3 py-1.5 border border-[#000] shadow-recessed mx-auto">
                {isLoading ? '...' : `${pnlIsPositive ? '+' : ''}${fmt(summary.totalPnl)} (${pnlIsPositive ? '+' : ''}${summary.pnlPercent.toFixed(2)}%)`}
             </p>
         </div>

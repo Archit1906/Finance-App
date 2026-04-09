@@ -105,7 +105,7 @@ export default function Coach() {
         {/* Quick Suggestion Chips */}
         {messages.length < 3 && !chatMutation.isPending && (
            <div className="bg-[#0a0a0a] px-6 py-3 flex gap-3 overflow-x-auto border-t border-[#333] relative z-20">
-              {['Analyze my spending this month', 'What is the 50/30/20 rule?', 'How do I save on 80C taxes?'].map(txt => (
+              {['Analyze my current finances', 'Do I have any budget warnings?', 'Are my goals on track?'].map(txt => (
                  <button key={txt} onClick={()=>setInput(txt)} className="text-[10px] font-mono font-bold tracking-widest text-[#aaa] border border-[#444] px-4 py-2 rounded uppercase whitespace-nowrap hover:bg-[#111] hover:text-[var(--color-champagne-gold)] hover:border-[var(--color-champagne-gold)] transition-colors shadow-recessed focus:outline-none">
                     {txt}
                  </button>
